@@ -4,7 +4,7 @@
 
 ### Goals
 
-- Define the purpose and core concepts of SimpleLang.
+- Define the purpose and core concepts.
 - Experiment with syntax options for simplicity and readability.
 - Establish foundational syntax rules.
 
