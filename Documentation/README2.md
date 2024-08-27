@@ -9,9 +9,11 @@
 ### Syntax Rules
 
 **Variables**
+
 `set <variable> name to <value>`
 
 **Arithmetic Operations**
+
 `set <variable> to <variable> <operator> <value>`
 
 **Classes**
