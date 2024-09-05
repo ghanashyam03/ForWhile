@@ -1,0 +1,1051 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> program
+Rule 1     program -> statements
+Rule 2     statements -> statements statement
+Rule 3     statements -> statement
+Rule 4     statement -> set_statement
+Rule 5     statement -> create_statement
+Rule 6     statement -> attach_statement
+Rule 7     statement -> repeat_statement
+Rule 8     statement -> if_statement
+Rule 9     statement -> ask_statement
+Rule 10    statement -> say_statement
+Rule 11    set_statement -> SET IDENTIFIER IDENTIFIER TO expression
+Rule 12    create_statement -> CREATE IDENTIFIER IDENTIFIER
+Rule 13    attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER
+Rule 14    repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT
+Rule 15    if_statement -> IF condition statements ELSE statements END IF
+Rule 16    ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+Rule 17    say_statement -> SAY expression
+Rule 18    condition -> IDENTIFIER IDENTIFIER comparison_op expression
+Rule 19    comparison_op -> GT
+Rule 20    comparison_op -> LT
+Rule 21    comparison_op -> EQ
+Rule 22    comparison_op -> NEQ
+Rule 23    expression -> STRING
+Rule 24    expression -> NUMBER
+Rule 25    expression -> COLOR
+Rule 26    expression -> IDENTIFIER
+Rule 27    expression -> IDENTIFIER IDENTIFIER
+Rule 28    expression -> expression PLUS expression
+
+Terminals, with rules where they appear
+
+ASK                  : 16
+ATTACH               : 13
+COLOR                : 25
+CREATE               : 12
+ELSE                 : 15
+END                  : 14 15
+EQ                   : 21
+GT                   : 19
+IDENTIFIER           : 11 11 12 12 13 13 16 16 16 18 18 26 27 27
+IF                   : 15 15
+LPAREN               : 16
+LT                   : 20
+NEQ                  : 22
+NUMBER               : 14 24
+PLUS                 : 28
+REPEAT               : 14 14
+RPAREN               : 16
+SAY                  : 17
+SET                  : 11 16
+STRING               : 16 23
+TIMES                : 14
+TO                   : 11 13 16
+error                : 
+
+Nonterminals, with rules where they appear
+
+ask_statement        : 9
+attach_statement     : 6
+comparison_op        : 18
+condition            : 15
+create_statement     : 5
+expression           : 11 17 18 28 28
+if_statement         : 8
+program              : 0
+repeat_statement     : 7
+say_statement        : 10
+set_statement        : 4
+statement            : 2 3
+statements           : 1 2 14 15 15
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . program
+    (1) program -> . statements
+    (2) statements -> . statements statement
+    (3) statements -> . statement
+    (4) statement -> . set_statement
+    (5) statement -> . create_statement
+    (6) statement -> . attach_statement
+    (7) statement -> . repeat_statement
+    (8) statement -> . if_statement
+    (9) statement -> . ask_statement
+    (10) statement -> . say_statement
+    (11) set_statement -> . SET IDENTIFIER IDENTIFIER TO expression
+    (12) create_statement -> . CREATE IDENTIFIER IDENTIFIER
+    (13) attach_statement -> . ATTACH IDENTIFIER TO IDENTIFIER
+    (14) repeat_statement -> . REPEAT NUMBER TIMES statements END REPEAT
+    (15) if_statement -> . IF condition statements ELSE statements END IF
+    (16) ask_statement -> . ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+    (17) say_statement -> . SAY expression
+
+    SET             shift and go to state 11
+    CREATE          shift and go to state 12
+    ATTACH          shift and go to state 13
+    REPEAT          shift and go to state 14
+    IF              shift and go to state 15
+    ASK             shift and go to state 16
+    SAY             shift and go to state 17
+
+    program                        shift and go to state 1
+    statements                     shift and go to state 2
+    statement                      shift and go to state 3
+    set_statement                  shift and go to state 4
+    create_statement               shift and go to state 5
+    attach_statement               shift and go to state 6
+    repeat_statement               shift and go to state 7
+    if_statement                   shift and go to state 8
+    ask_statement                  shift and go to state 9
+    say_statement                  shift and go to state 10
+
+state 1
+
+    (0) S' -> program .
+
+
+
+state 2
+
+    (1) program -> statements .
+    (2) statements -> statements . statement
+    (4) statement -> . set_statement
+    (5) statement -> . create_statement
+    (6) statement -> . attach_statement
+    (7) statement -> . repeat_statement
+    (8) statement -> . if_statement
+    (9) statement -> . ask_statement
+    (10) statement -> . say_statement
+    (11) set_statement -> . SET IDENTIFIER IDENTIFIER TO expression
+    (12) create_statement -> . CREATE IDENTIFIER IDENTIFIER
+    (13) attach_statement -> . ATTACH IDENTIFIER TO IDENTIFIER
+    (14) repeat_statement -> . REPEAT NUMBER TIMES statements END REPEAT
+    (15) if_statement -> . IF condition statements ELSE statements END IF
+    (16) ask_statement -> . ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+    (17) say_statement -> . SAY expression
+
+    $end            reduce using rule 1 (program -> statements .)
+    SET             shift and go to state 11
+    CREATE          shift and go to state 12
+    ATTACH          shift and go to state 13
+    REPEAT          shift and go to state 14
+    IF              shift and go to state 15
+    ASK             shift and go to state 16
+    SAY             shift and go to state 17
+
+    statement                      shift and go to state 18
+    set_statement                  shift and go to state 4
+    create_statement               shift and go to state 5
+    attach_statement               shift and go to state 6
+    repeat_statement               shift and go to state 7
+    if_statement                   shift and go to state 8
+    ask_statement                  shift and go to state 9
+    say_statement                  shift and go to state 10
+
+state 3
+
+    (3) statements -> statement .
+
+    SET             reduce using rule 3 (statements -> statement .)
+    CREATE          reduce using rule 3 (statements -> statement .)
+    ATTACH          reduce using rule 3 (statements -> statement .)
+    REPEAT          reduce using rule 3 (statements -> statement .)
+    IF              reduce using rule 3 (statements -> statement .)
+    ASK             reduce using rule 3 (statements -> statement .)
+    SAY             reduce using rule 3 (statements -> statement .)
+    $end            reduce using rule 3 (statements -> statement .)
+    ELSE            reduce using rule 3 (statements -> statement .)
+    END             reduce using rule 3 (statements -> statement .)
+
+
+state 4
+
+    (4) statement -> set_statement .
+
+    SET             reduce using rule 4 (statement -> set_statement .)
+    CREATE          reduce using rule 4 (statement -> set_statement .)
+    ATTACH          reduce using rule 4 (statement -> set_statement .)
+    REPEAT          reduce using rule 4 (statement -> set_statement .)
+    IF              reduce using rule 4 (statement -> set_statement .)
+    ASK             reduce using rule 4 (statement -> set_statement .)
+    SAY             reduce using rule 4 (statement -> set_statement .)
+    $end            reduce using rule 4 (statement -> set_statement .)
+    ELSE            reduce using rule 4 (statement -> set_statement .)
+    END             reduce using rule 4 (statement -> set_statement .)
+
+
+state 5
+
+    (5) statement -> create_statement .
+
+    SET             reduce using rule 5 (statement -> create_statement .)
+    CREATE          reduce using rule 5 (statement -> create_statement .)
+    ATTACH          reduce using rule 5 (statement -> create_statement .)
+    REPEAT          reduce using rule 5 (statement -> create_statement .)
+    IF              reduce using rule 5 (statement -> create_statement .)
+    ASK             reduce using rule 5 (statement -> create_statement .)
+    SAY             reduce using rule 5 (statement -> create_statement .)
+    $end            reduce using rule 5 (statement -> create_statement .)
+    ELSE            reduce using rule 5 (statement -> create_statement .)
+    END             reduce using rule 5 (statement -> create_statement .)
+
+
+state 6
+
+    (6) statement -> attach_statement .
+
+    SET             reduce using rule 6 (statement -> attach_statement .)
+    CREATE          reduce using rule 6 (statement -> attach_statement .)
+    ATTACH          reduce using rule 6 (statement -> attach_statement .)
+    REPEAT          reduce using rule 6 (statement -> attach_statement .)
+    IF              reduce using rule 6 (statement -> attach_statement .)
+    ASK             reduce using rule 6 (statement -> attach_statement .)
+    SAY             reduce using rule 6 (statement -> attach_statement .)
+    $end            reduce using rule 6 (statement -> attach_statement .)
+    ELSE            reduce using rule 6 (statement -> attach_statement .)
+    END             reduce using rule 6 (statement -> attach_statement .)
+
+
+state 7
+
+    (7) statement -> repeat_statement .
+
+    SET             reduce using rule 7 (statement -> repeat_statement .)
+    CREATE          reduce using rule 7 (statement -> repeat_statement .)
+    ATTACH          reduce using rule 7 (statement -> repeat_statement .)
+    REPEAT          reduce using rule 7 (statement -> repeat_statement .)
+    IF              reduce using rule 7 (statement -> repeat_statement .)
+    ASK             reduce using rule 7 (statement -> repeat_statement .)
+    SAY             reduce using rule 7 (statement -> repeat_statement .)
+    $end            reduce using rule 7 (statement -> repeat_statement .)
+    ELSE            reduce using rule 7 (statement -> repeat_statement .)
+    END             reduce using rule 7 (statement -> repeat_statement .)
+
+
+state 8
+
+    (8) statement -> if_statement .
+
+    SET             reduce using rule 8 (statement -> if_statement .)
+    CREATE          reduce using rule 8 (statement -> if_statement .)
+    ATTACH          reduce using rule 8 (statement -> if_statement .)
+    REPEAT          reduce using rule 8 (statement -> if_statement .)
+    IF              reduce using rule 8 (statement -> if_statement .)
+    ASK             reduce using rule 8 (statement -> if_statement .)
+    SAY             reduce using rule 8 (statement -> if_statement .)
+    $end            reduce using rule 8 (statement -> if_statement .)
+    ELSE            reduce using rule 8 (statement -> if_statement .)
+    END             reduce using rule 8 (statement -> if_statement .)
+
+
+state 9
+
+    (9) statement -> ask_statement .
+
+    SET             reduce using rule 9 (statement -> ask_statement .)
+    CREATE          reduce using rule 9 (statement -> ask_statement .)
+    ATTACH          reduce using rule 9 (statement -> ask_statement .)
+    REPEAT          reduce using rule 9 (statement -> ask_statement .)
+    IF              reduce using rule 9 (statement -> ask_statement .)
+    ASK             reduce using rule 9 (statement -> ask_statement .)
+    SAY             reduce using rule 9 (statement -> ask_statement .)
+    $end            reduce using rule 9 (statement -> ask_statement .)
+    ELSE            reduce using rule 9 (statement -> ask_statement .)
+    END             reduce using rule 9 (statement -> ask_statement .)
+
+
+state 10
+
+    (10) statement -> say_statement .
+
+    SET             reduce using rule 10 (statement -> say_statement .)
+    CREATE          reduce using rule 10 (statement -> say_statement .)
+    ATTACH          reduce using rule 10 (statement -> say_statement .)
+    REPEAT          reduce using rule 10 (statement -> say_statement .)
+    IF              reduce using rule 10 (statement -> say_statement .)
+    ASK             reduce using rule 10 (statement -> say_statement .)
+    SAY             reduce using rule 10 (statement -> say_statement .)
+    $end            reduce using rule 10 (statement -> say_statement .)
+    ELSE            reduce using rule 10 (statement -> say_statement .)
+    END             reduce using rule 10 (statement -> say_statement .)
+
+
+state 11
+
+    (11) set_statement -> SET . IDENTIFIER IDENTIFIER TO expression
+
+    IDENTIFIER      shift and go to state 19
+
+
+state 12
+
+    (12) create_statement -> CREATE . IDENTIFIER IDENTIFIER
+
+    IDENTIFIER      shift and go to state 20
+
+
+state 13
+
+    (13) attach_statement -> ATTACH . IDENTIFIER TO IDENTIFIER
+
+    IDENTIFIER      shift and go to state 21
+
+
+state 14
+
+    (14) repeat_statement -> REPEAT . NUMBER TIMES statements END REPEAT
+
+    NUMBER          shift and go to state 22
+
+
+state 15
+
+    (15) if_statement -> IF . condition statements ELSE statements END IF
+    (18) condition -> . IDENTIFIER IDENTIFIER comparison_op expression
+
+    IDENTIFIER      shift and go to state 24
+
+    condition                      shift and go to state 23
+
+state 16
+
+    (16) ask_statement -> ASK . STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+
+    STRING          shift and go to state 25
+
+
+state 17
+
+    (17) say_statement -> SAY . expression
+    (23) expression -> . STRING
+    (24) expression -> . NUMBER
+    (25) expression -> . COLOR
+    (26) expression -> . IDENTIFIER
+    (27) expression -> . IDENTIFIER IDENTIFIER
+    (28) expression -> . expression PLUS expression
+
+    STRING          shift and go to state 27
+    NUMBER          shift and go to state 28
+    COLOR           shift and go to state 29
+    IDENTIFIER      shift and go to state 30
+
+    expression                     shift and go to state 26
+
+state 18
+
+    (2) statements -> statements statement .
+
+    SET             reduce using rule 2 (statements -> statements statement .)
+    CREATE          reduce using rule 2 (statements -> statements statement .)
+    ATTACH          reduce using rule 2 (statements -> statements statement .)
+    REPEAT          reduce using rule 2 (statements -> statements statement .)
+    IF              reduce using rule 2 (statements -> statements statement .)
+    ASK             reduce using rule 2 (statements -> statements statement .)
+    SAY             reduce using rule 2 (statements -> statements statement .)
+    $end            reduce using rule 2 (statements -> statements statement .)
+    ELSE            reduce using rule 2 (statements -> statements statement .)
+    END             reduce using rule 2 (statements -> statements statement .)
+
+
+state 19
+
+    (11) set_statement -> SET IDENTIFIER . IDENTIFIER TO expression
+
+    IDENTIFIER      shift and go to state 31
+
+
+state 20
+
+    (12) create_statement -> CREATE IDENTIFIER . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 32
+
+
+state 21
+
+    (13) attach_statement -> ATTACH IDENTIFIER . TO IDENTIFIER
+
+    TO              shift and go to state 33
+
+
+state 22
+
+    (14) repeat_statement -> REPEAT NUMBER . TIMES statements END REPEAT
+
+    TIMES           shift and go to state 34
+
+
+state 23
+
+    (15) if_statement -> IF condition . statements ELSE statements END IF
+    (2) statements -> . statements statement
+    (3) statements -> . statement
+    (4) statement -> . set_statement
+    (5) statement -> . create_statement
+    (6) statement -> . attach_statement
+    (7) statement -> . repeat_statement
+    (8) statement -> . if_statement
+    (9) statement -> . ask_statement
+    (10) statement -> . say_statement
+    (11) set_statement -> . SET IDENTIFIER IDENTIFIER TO expression
+    (12) create_statement -> . CREATE IDENTIFIER IDENTIFIER
+    (13) attach_statement -> . ATTACH IDENTIFIER TO IDENTIFIER
+    (14) repeat_statement -> . REPEAT NUMBER TIMES statements END REPEAT
+    (15) if_statement -> . IF condition statements ELSE statements END IF
+    (16) ask_statement -> . ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+    (17) say_statement -> . SAY expression
+
+    SET             shift and go to state 11
+    CREATE          shift and go to state 12
+    ATTACH          shift and go to state 13
+    REPEAT          shift and go to state 14
+    IF              shift and go to state 15
+    ASK             shift and go to state 16
+    SAY             shift and go to state 17
+
+    statements                     shift and go to state 35
+    statement                      shift and go to state 3
+    set_statement                  shift and go to state 4
+    create_statement               shift and go to state 5
+    attach_statement               shift and go to state 6
+    repeat_statement               shift and go to state 7
+    if_statement                   shift and go to state 8
+    ask_statement                  shift and go to state 9
+    say_statement                  shift and go to state 10
+
+state 24
+
+    (18) condition -> IDENTIFIER . IDENTIFIER comparison_op expression
+
+    IDENTIFIER      shift and go to state 36
+
+
+state 25
+
+    (16) ask_statement -> ASK STRING . SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+
+    SET             shift and go to state 37
+
+
+state 26
+
+    (17) say_statement -> SAY expression .
+    (28) expression -> expression . PLUS expression
+
+    SET             reduce using rule 17 (say_statement -> SAY expression .)
+    CREATE          reduce using rule 17 (say_statement -> SAY expression .)
+    ATTACH          reduce using rule 17 (say_statement -> SAY expression .)
+    REPEAT          reduce using rule 17 (say_statement -> SAY expression .)
+    IF              reduce using rule 17 (say_statement -> SAY expression .)
+    ASK             reduce using rule 17 (say_statement -> SAY expression .)
+    SAY             reduce using rule 17 (say_statement -> SAY expression .)
+    $end            reduce using rule 17 (say_statement -> SAY expression .)
+    ELSE            reduce using rule 17 (say_statement -> SAY expression .)
+    END             reduce using rule 17 (say_statement -> SAY expression .)
+    PLUS            shift and go to state 38
+
+
+state 27
+
+    (23) expression -> STRING .
+
+    PLUS            reduce using rule 23 (expression -> STRING .)
+    SET             reduce using rule 23 (expression -> STRING .)
+    CREATE          reduce using rule 23 (expression -> STRING .)
+    ATTACH          reduce using rule 23 (expression -> STRING .)
+    REPEAT          reduce using rule 23 (expression -> STRING .)
+    IF              reduce using rule 23 (expression -> STRING .)
+    ASK             reduce using rule 23 (expression -> STRING .)
+    SAY             reduce using rule 23 (expression -> STRING .)
+    $end            reduce using rule 23 (expression -> STRING .)
+    ELSE            reduce using rule 23 (expression -> STRING .)
+    END             reduce using rule 23 (expression -> STRING .)
+
+
+state 28
+
+    (24) expression -> NUMBER .
+
+    PLUS            reduce using rule 24 (expression -> NUMBER .)
+    SET             reduce using rule 24 (expression -> NUMBER .)
+    CREATE          reduce using rule 24 (expression -> NUMBER .)
+    ATTACH          reduce using rule 24 (expression -> NUMBER .)
+    REPEAT          reduce using rule 24 (expression -> NUMBER .)
+    IF              reduce using rule 24 (expression -> NUMBER .)
+    ASK             reduce using rule 24 (expression -> NUMBER .)
+    SAY             reduce using rule 24 (expression -> NUMBER .)
+    $end            reduce using rule 24 (expression -> NUMBER .)
+    ELSE            reduce using rule 24 (expression -> NUMBER .)
+    END             reduce using rule 24 (expression -> NUMBER .)
+
+
+state 29
+
+    (25) expression -> COLOR .
+
+    PLUS            reduce using rule 25 (expression -> COLOR .)
+    SET             reduce using rule 25 (expression -> COLOR .)
+    CREATE          reduce using rule 25 (expression -> COLOR .)
+    ATTACH          reduce using rule 25 (expression -> COLOR .)
+    REPEAT          reduce using rule 25 (expression -> COLOR .)
+    IF              reduce using rule 25 (expression -> COLOR .)
+    ASK             reduce using rule 25 (expression -> COLOR .)
+    SAY             reduce using rule 25 (expression -> COLOR .)
+    $end            reduce using rule 25 (expression -> COLOR .)
+    ELSE            reduce using rule 25 (expression -> COLOR .)
+    END             reduce using rule 25 (expression -> COLOR .)
+
+
+state 30
+
+    (26) expression -> IDENTIFIER .
+    (27) expression -> IDENTIFIER . IDENTIFIER
+
+    PLUS            reduce using rule 26 (expression -> IDENTIFIER .)
+    SET             reduce using rule 26 (expression -> IDENTIFIER .)
+    CREATE          reduce using rule 26 (expression -> IDENTIFIER .)
+    ATTACH          reduce using rule 26 (expression -> IDENTIFIER .)
+    REPEAT          reduce using rule 26 (expression -> IDENTIFIER .)
+    IF              reduce using rule 26 (expression -> IDENTIFIER .)
+    ASK             reduce using rule 26 (expression -> IDENTIFIER .)
+    SAY             reduce using rule 26 (expression -> IDENTIFIER .)
+    $end            reduce using rule 26 (expression -> IDENTIFIER .)
+    ELSE            reduce using rule 26 (expression -> IDENTIFIER .)
+    END             reduce using rule 26 (expression -> IDENTIFIER .)
+    IDENTIFIER      shift and go to state 39
+
+
+state 31
+
+    (11) set_statement -> SET IDENTIFIER IDENTIFIER . TO expression
+
+    TO              shift and go to state 40
+
+
+state 32
+
+    (12) create_statement -> CREATE IDENTIFIER IDENTIFIER .
+
+    SET             reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+    CREATE          reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+    ATTACH          reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+    REPEAT          reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+    IF              reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+    ASK             reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+    SAY             reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+    $end            reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+    ELSE            reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+    END             reduce using rule 12 (create_statement -> CREATE IDENTIFIER IDENTIFIER .)
+
+
+state 33
+
+    (13) attach_statement -> ATTACH IDENTIFIER TO . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 41
+
+
+state 34
+
+    (14) repeat_statement -> REPEAT NUMBER TIMES . statements END REPEAT
+    (2) statements -> . statements statement
+    (3) statements -> . statement
+    (4) statement -> . set_statement
+    (5) statement -> . create_statement
+    (6) statement -> . attach_statement
+    (7) statement -> . repeat_statement
+    (8) statement -> . if_statement
+    (9) statement -> . ask_statement
+    (10) statement -> . say_statement
+    (11) set_statement -> . SET IDENTIFIER IDENTIFIER TO expression
+    (12) create_statement -> . CREATE IDENTIFIER IDENTIFIER
+    (13) attach_statement -> . ATTACH IDENTIFIER TO IDENTIFIER
+    (14) repeat_statement -> . REPEAT NUMBER TIMES statements END REPEAT
+    (15) if_statement -> . IF condition statements ELSE statements END IF
+    (16) ask_statement -> . ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+    (17) say_statement -> . SAY expression
+
+    SET             shift and go to state 11
+    CREATE          shift and go to state 12
+    ATTACH          shift and go to state 13
+    REPEAT          shift and go to state 14
+    IF              shift and go to state 15
+    ASK             shift and go to state 16
+    SAY             shift and go to state 17
+
+    statements                     shift and go to state 42
+    statement                      shift and go to state 3
+    set_statement                  shift and go to state 4
+    create_statement               shift and go to state 5
+    attach_statement               shift and go to state 6
+    repeat_statement               shift and go to state 7
+    if_statement                   shift and go to state 8
+    ask_statement                  shift and go to state 9
+    say_statement                  shift and go to state 10
+
+state 35
+
+    (15) if_statement -> IF condition statements . ELSE statements END IF
+    (2) statements -> statements . statement
+    (4) statement -> . set_statement
+    (5) statement -> . create_statement
+    (6) statement -> . attach_statement
+    (7) statement -> . repeat_statement
+    (8) statement -> . if_statement
+    (9) statement -> . ask_statement
+    (10) statement -> . say_statement
+    (11) set_statement -> . SET IDENTIFIER IDENTIFIER TO expression
+    (12) create_statement -> . CREATE IDENTIFIER IDENTIFIER
+    (13) attach_statement -> . ATTACH IDENTIFIER TO IDENTIFIER
+    (14) repeat_statement -> . REPEAT NUMBER TIMES statements END REPEAT
+    (15) if_statement -> . IF condition statements ELSE statements END IF
+    (16) ask_statement -> . ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+    (17) say_statement -> . SAY expression
+
+    ELSE            shift and go to state 43
+    SET             shift and go to state 11
+    CREATE          shift and go to state 12
+    ATTACH          shift and go to state 13
+    REPEAT          shift and go to state 14
+    IF              shift and go to state 15
+    ASK             shift and go to state 16
+    SAY             shift and go to state 17
+
+    statement                      shift and go to state 18
+    set_statement                  shift and go to state 4
+    create_statement               shift and go to state 5
+    attach_statement               shift and go to state 6
+    repeat_statement               shift and go to state 7
+    if_statement                   shift and go to state 8
+    ask_statement                  shift and go to state 9
+    say_statement                  shift and go to state 10
+
+state 36
+
+    (18) condition -> IDENTIFIER IDENTIFIER . comparison_op expression
+    (19) comparison_op -> . GT
+    (20) comparison_op -> . LT
+    (21) comparison_op -> . EQ
+    (22) comparison_op -> . NEQ
+
+    GT              shift and go to state 45
+    LT              shift and go to state 46
+    EQ              shift and go to state 47
+    NEQ             shift and go to state 48
+
+    comparison_op                  shift and go to state 44
+
+state 37
+
+    (16) ask_statement -> ASK STRING SET . IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+
+    IDENTIFIER      shift and go to state 49
+
+
+state 38
+
+    (28) expression -> expression PLUS . expression
+    (23) expression -> . STRING
+    (24) expression -> . NUMBER
+    (25) expression -> . COLOR
+    (26) expression -> . IDENTIFIER
+    (27) expression -> . IDENTIFIER IDENTIFIER
+    (28) expression -> . expression PLUS expression
+
+    STRING          shift and go to state 27
+    NUMBER          shift and go to state 28
+    COLOR           shift and go to state 29
+    IDENTIFIER      shift and go to state 30
+
+    expression                     shift and go to state 50
+
+state 39
+
+    (27) expression -> IDENTIFIER IDENTIFIER .
+
+    PLUS            reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    SET             reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    CREATE          reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    ATTACH          reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    REPEAT          reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    IF              reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    ASK             reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    SAY             reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    $end            reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    ELSE            reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+    END             reduce using rule 27 (expression -> IDENTIFIER IDENTIFIER .)
+
+
+state 40
+
+    (11) set_statement -> SET IDENTIFIER IDENTIFIER TO . expression
+    (23) expression -> . STRING
+    (24) expression -> . NUMBER
+    (25) expression -> . COLOR
+    (26) expression -> . IDENTIFIER
+    (27) expression -> . IDENTIFIER IDENTIFIER
+    (28) expression -> . expression PLUS expression
+
+    STRING          shift and go to state 27
+    NUMBER          shift and go to state 28
+    COLOR           shift and go to state 29
+    IDENTIFIER      shift and go to state 30
+
+    expression                     shift and go to state 51
+
+state 41
+
+    (13) attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .
+
+    SET             reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+    CREATE          reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+    ATTACH          reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+    REPEAT          reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+    IF              reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+    ASK             reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+    SAY             reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+    $end            reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+    ELSE            reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+    END             reduce using rule 13 (attach_statement -> ATTACH IDENTIFIER TO IDENTIFIER .)
+
+
+state 42
+
+    (14) repeat_statement -> REPEAT NUMBER TIMES statements . END REPEAT
+    (2) statements -> statements . statement
+    (4) statement -> . set_statement
+    (5) statement -> . create_statement
+    (6) statement -> . attach_statement
+    (7) statement -> . repeat_statement
+    (8) statement -> . if_statement
+    (9) statement -> . ask_statement
+    (10) statement -> . say_statement
+    (11) set_statement -> . SET IDENTIFIER IDENTIFIER TO expression
+    (12) create_statement -> . CREATE IDENTIFIER IDENTIFIER
+    (13) attach_statement -> . ATTACH IDENTIFIER TO IDENTIFIER
+    (14) repeat_statement -> . REPEAT NUMBER TIMES statements END REPEAT
+    (15) if_statement -> . IF condition statements ELSE statements END IF
+    (16) ask_statement -> . ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+    (17) say_statement -> . SAY expression
+
+    END             shift and go to state 52
+    SET             shift and go to state 11
+    CREATE          shift and go to state 12
+    ATTACH          shift and go to state 13
+    REPEAT          shift and go to state 14
+    IF              shift and go to state 15
+    ASK             shift and go to state 16
+    SAY             shift and go to state 17
+
+    statement                      shift and go to state 18
+    set_statement                  shift and go to state 4
+    create_statement               shift and go to state 5
+    attach_statement               shift and go to state 6
+    repeat_statement               shift and go to state 7
+    if_statement                   shift and go to state 8
+    ask_statement                  shift and go to state 9
+    say_statement                  shift and go to state 10
+
+state 43
+
+    (15) if_statement -> IF condition statements ELSE . statements END IF
+    (2) statements -> . statements statement
+    (3) statements -> . statement
+    (4) statement -> . set_statement
+    (5) statement -> . create_statement
+    (6) statement -> . attach_statement
+    (7) statement -> . repeat_statement
+    (8) statement -> . if_statement
+    (9) statement -> . ask_statement
+    (10) statement -> . say_statement
+    (11) set_statement -> . SET IDENTIFIER IDENTIFIER TO expression
+    (12) create_statement -> . CREATE IDENTIFIER IDENTIFIER
+    (13) attach_statement -> . ATTACH IDENTIFIER TO IDENTIFIER
+    (14) repeat_statement -> . REPEAT NUMBER TIMES statements END REPEAT
+    (15) if_statement -> . IF condition statements ELSE statements END IF
+    (16) ask_statement -> . ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+    (17) say_statement -> . SAY expression
+
+    SET             shift and go to state 11
+    CREATE          shift and go to state 12
+    ATTACH          shift and go to state 13
+    REPEAT          shift and go to state 14
+    IF              shift and go to state 15
+    ASK             shift and go to state 16
+    SAY             shift and go to state 17
+
+    statements                     shift and go to state 53
+    statement                      shift and go to state 3
+    set_statement                  shift and go to state 4
+    create_statement               shift and go to state 5
+    attach_statement               shift and go to state 6
+    repeat_statement               shift and go to state 7
+    if_statement                   shift and go to state 8
+    ask_statement                  shift and go to state 9
+    say_statement                  shift and go to state 10
+
+state 44
+
+    (18) condition -> IDENTIFIER IDENTIFIER comparison_op . expression
+    (23) expression -> . STRING
+    (24) expression -> . NUMBER
+    (25) expression -> . COLOR
+    (26) expression -> . IDENTIFIER
+    (27) expression -> . IDENTIFIER IDENTIFIER
+    (28) expression -> . expression PLUS expression
+
+    STRING          shift and go to state 27
+    NUMBER          shift and go to state 28
+    COLOR           shift and go to state 29
+    IDENTIFIER      shift and go to state 30
+
+    expression                     shift and go to state 54
+
+state 45
+
+    (19) comparison_op -> GT .
+
+    STRING          reduce using rule 19 (comparison_op -> GT .)
+    NUMBER          reduce using rule 19 (comparison_op -> GT .)
+    COLOR           reduce using rule 19 (comparison_op -> GT .)
+    IDENTIFIER      reduce using rule 19 (comparison_op -> GT .)
+
+
+state 46
+
+    (20) comparison_op -> LT .
+
+    STRING          reduce using rule 20 (comparison_op -> LT .)
+    NUMBER          reduce using rule 20 (comparison_op -> LT .)
+    COLOR           reduce using rule 20 (comparison_op -> LT .)
+    IDENTIFIER      reduce using rule 20 (comparison_op -> LT .)
+
+
+state 47
+
+    (21) comparison_op -> EQ .
+
+    STRING          reduce using rule 21 (comparison_op -> EQ .)
+    NUMBER          reduce using rule 21 (comparison_op -> EQ .)
+    COLOR           reduce using rule 21 (comparison_op -> EQ .)
+    IDENTIFIER      reduce using rule 21 (comparison_op -> EQ .)
+
+
+state 48
+
+    (22) comparison_op -> NEQ .
+
+    STRING          reduce using rule 22 (comparison_op -> NEQ .)
+    NUMBER          reduce using rule 22 (comparison_op -> NEQ .)
+    COLOR           reduce using rule 22 (comparison_op -> NEQ .)
+    IDENTIFIER      reduce using rule 22 (comparison_op -> NEQ .)
+
+
+state 49
+
+    (16) ask_statement -> ASK STRING SET IDENTIFIER . IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+
+    IDENTIFIER      shift and go to state 55
+
+
+state 50
+
+    (28) expression -> expression PLUS expression .
+    (28) expression -> expression . PLUS expression
+
+  ! shift/reduce conflict for PLUS resolved as shift
+    SET             reduce using rule 28 (expression -> expression PLUS expression .)
+    CREATE          reduce using rule 28 (expression -> expression PLUS expression .)
+    ATTACH          reduce using rule 28 (expression -> expression PLUS expression .)
+    REPEAT          reduce using rule 28 (expression -> expression PLUS expression .)
+    IF              reduce using rule 28 (expression -> expression PLUS expression .)
+    ASK             reduce using rule 28 (expression -> expression PLUS expression .)
+    SAY             reduce using rule 28 (expression -> expression PLUS expression .)
+    $end            reduce using rule 28 (expression -> expression PLUS expression .)
+    ELSE            reduce using rule 28 (expression -> expression PLUS expression .)
+    END             reduce using rule 28 (expression -> expression PLUS expression .)
+    PLUS            shift and go to state 38
+
+  ! PLUS            [ reduce using rule 28 (expression -> expression PLUS expression .) ]
+
+
+state 51
+
+    (11) set_statement -> SET IDENTIFIER IDENTIFIER TO expression .
+    (28) expression -> expression . PLUS expression
+
+    SET             reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    CREATE          reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    ATTACH          reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    REPEAT          reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    IF              reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    ASK             reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    SAY             reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    $end            reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    ELSE            reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    END             reduce using rule 11 (set_statement -> SET IDENTIFIER IDENTIFIER TO expression .)
+    PLUS            shift and go to state 38
+
+
+state 52
+
+    (14) repeat_statement -> REPEAT NUMBER TIMES statements END . REPEAT
+
+    REPEAT          shift and go to state 56
+
+
+state 53
+
+    (15) if_statement -> IF condition statements ELSE statements . END IF
+    (2) statements -> statements . statement
+    (4) statement -> . set_statement
+    (5) statement -> . create_statement
+    (6) statement -> . attach_statement
+    (7) statement -> . repeat_statement
+    (8) statement -> . if_statement
+    (9) statement -> . ask_statement
+    (10) statement -> . say_statement
+    (11) set_statement -> . SET IDENTIFIER IDENTIFIER TO expression
+    (12) create_statement -> . CREATE IDENTIFIER IDENTIFIER
+    (13) attach_statement -> . ATTACH IDENTIFIER TO IDENTIFIER
+    (14) repeat_statement -> . REPEAT NUMBER TIMES statements END REPEAT
+    (15) if_statement -> . IF condition statements ELSE statements END IF
+    (16) ask_statement -> . ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN
+    (17) say_statement -> . SAY expression
+
+    END             shift and go to state 57
+    SET             shift and go to state 11
+    CREATE          shift and go to state 12
+    ATTACH          shift and go to state 13
+    REPEAT          shift and go to state 14
+    IF              shift and go to state 15
+    ASK             shift and go to state 16
+    SAY             shift and go to state 17
+
+    statement                      shift and go to state 18
+    set_statement                  shift and go to state 4
+    create_statement               shift and go to state 5
+    attach_statement               shift and go to state 6
+    repeat_statement               shift and go to state 7
+    if_statement                   shift and go to state 8
+    ask_statement                  shift and go to state 9
+    say_statement                  shift and go to state 10
+
+state 54
+
+    (18) condition -> IDENTIFIER IDENTIFIER comparison_op expression .
+    (28) expression -> expression . PLUS expression
+
+    SET             reduce using rule 18 (condition -> IDENTIFIER IDENTIFIER comparison_op expression .)
+    CREATE          reduce using rule 18 (condition -> IDENTIFIER IDENTIFIER comparison_op expression .)
+    ATTACH          reduce using rule 18 (condition -> IDENTIFIER IDENTIFIER comparison_op expression .)
+    REPEAT          reduce using rule 18 (condition -> IDENTIFIER IDENTIFIER comparison_op expression .)
+    IF              reduce using rule 18 (condition -> IDENTIFIER IDENTIFIER comparison_op expression .)
+    ASK             reduce using rule 18 (condition -> IDENTIFIER IDENTIFIER comparison_op expression .)
+    SAY             reduce using rule 18 (condition -> IDENTIFIER IDENTIFIER comparison_op expression .)
+    PLUS            shift and go to state 38
+
+
+state 55
+
+    (16) ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER . TO LPAREN IDENTIFIER RPAREN
+
+    TO              shift and go to state 58
+
+
+state 56
+
+    (14) repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .
+
+    SET             reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+    CREATE          reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+    ATTACH          reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+    REPEAT          reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+    IF              reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+    ASK             reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+    SAY             reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+    $end            reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+    ELSE            reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+    END             reduce using rule 14 (repeat_statement -> REPEAT NUMBER TIMES statements END REPEAT .)
+
+
+state 57
+
+    (15) if_statement -> IF condition statements ELSE statements END . IF
+
+    IF              shift and go to state 59
+
+
+state 58
+
+    (16) ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO . LPAREN IDENTIFIER RPAREN
+
+    LPAREN          shift and go to state 60
+
+
+state 59
+
+    (15) if_statement -> IF condition statements ELSE statements END IF .
+
+    SET             reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+    CREATE          reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+    ATTACH          reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+    REPEAT          reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+    IF              reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+    ASK             reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+    SAY             reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+    $end            reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+    ELSE            reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+    END             reduce using rule 15 (if_statement -> IF condition statements ELSE statements END IF .)
+
+
+state 60
+
+    (16) ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN . IDENTIFIER RPAREN
+
+    IDENTIFIER      shift and go to state 61
+
+
+state 61
+
+    (16) ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER . RPAREN
+
+    RPAREN          shift and go to state 62
+
+
+state 62
+
+    (16) ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .
+
+    SET             reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+    CREATE          reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+    ATTACH          reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+    REPEAT          reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+    IF              reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+    ASK             reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+    SAY             reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+    $end            reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+    ELSE            reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+    END             reduce using rule 16 (ask_statement -> ASK STRING SET IDENTIFIER IDENTIFIER TO LPAREN IDENTIFIER RPAREN .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for PLUS in state 50 resolved as shift

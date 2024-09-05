@@ -1,0 +1,17 @@
+# Sample code
+
+set Bob name to "Bob"
+set Bob age to 10
+create character Alice
+attach Head to Alice
+repeat 5 times
+  set Bob age to Bob age + 1
+end repeat
+if Bob age > 5
+  set Bob color to 'red'
+else
+  set Bob color to 'green'
+end if
+ask "What is your favorite color?" 
+set Bob favorite color to (input)
+say "Bob's favorite color is " + Bob favorite color
