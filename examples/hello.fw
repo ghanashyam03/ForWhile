@@ -1,0 +1,8 @@
+say "Hello from ForWhile!"
+
+set my greeting to "Welcome to programming!"
+say my greeting
+
+repeat 3 times
+  say "Learning is fun!"
+end repeat

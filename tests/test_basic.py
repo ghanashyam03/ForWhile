@@ -1,5 +1,5 @@
-from simplelang_lexer import lexer
-from simplelang_parser import parser
+from forwhile.lexer import lexer
+from forwhile.parser import parser
 
 # Test input
 data = '''
@@ -40,6 +40,7 @@ create Character Alice with "Alice"
 create Head AliceHead with "round" "red"
 attach Head to Alice
 
+# Create arm AliceArm with "long" "left"
 create Arm AliceArm with "long" "left"
 attach Arm to Alice
 
@@ -69,28 +70,33 @@ say "Bob's favorite color is " + Bob favorite color
 call Bob describe
 '''
 
-# Tokenize
-print("Tokens:")
-lexer.input(data)
-for token in lexer:
-    print(token)
+def run_test():
+    # Tokenize
+    print("Tokens:")
+    lexer.input(data)
+    for token in lexer:
+        print(token)
 
-# Parse
-print("\nParse Tree:")
-result = parser.parse(data, debug=True)  # Enable debug mode
+    # Parse
+    print("\nParse Tree:")
+    result = parser.parse(data, debug=True)  # Enable debug mode
 
-def print_tree(node, indent=""):
-    if isinstance(node, tuple):
-        print(indent + node[0])
-        for item in node[1:]:
-            print_tree(item, indent + "  ")
-    elif isinstance(node, list):
-        for item in node:
-            print_tree(item, indent)
+    def print_tree(node, indent=""):
+        if isinstance(node, tuple):
+            print(indent + node[0])
+            for item in node[1:]:
+                print_tree(item, indent + "  ")
+        elif isinstance(node, list):
+            for item in node:
+                print_tree(item, indent)
+        else:
+            print(indent + str(node))
+
+    if result:
+        print_tree(result)
+        print("\nTest passed successfully!")
     else:
-        print(indent + str(node))
+        print("Parsing failed")
 
-if result:
-    print_tree(result)
-else:
-    print("Parsing failed")
+if __name__ == "__main__":
+    run_test()

@@ -1,0 +1,15 @@
+README.md
+setup.py
+forwhile/__init__.py
+forwhile/errors.py
+forwhile/interpreter.py
+forwhile/lexer.py
+forwhile/parser.py
+forwhile/parsetab.py
+forwhile.egg-info/PKG-INFO
+forwhile.egg-info/SOURCES.txt
+forwhile.egg-info/dependency_links.txt
+forwhile.egg-info/entry_points.txt
+forwhile.egg-info/requires.txt
+forwhile.egg-info/top_level.txt
+tests/test_basic.py

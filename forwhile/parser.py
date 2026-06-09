@@ -1,5 +1,5 @@
 import ply.yacc as yacc
-from simplelang_lexer import tokens
+from forwhile.lexer import tokens
 
 def p_program(p):
     '''program : statements'''
