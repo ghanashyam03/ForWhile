@@ -1,102 +1,136 @@
+import pytest
 from forwhile.lexer import lexer
 from forwhile.parser import parser
+from forwhile.interpreter import Interpreter
 
-# Test input
-data = '''
-# Define a class for character
-class Character 
-  # Constructor to set initial name
-  create with (given name)
-    set name to given name
-    set age to 0  # Default age for every character
-  end create
+def test_set_and_say(capsys):
+    code = """
+    give my the trait name to "Alice"
+    say my name
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "Alice"
 
-  # Method to describe character
-  method describe
-    say "I am " + name + " and I am " + age + " years old."
-  end method
-end class
+def test_arithmetic(capsys):
+    code = """
+    give num the trait value1 to 10
+    give num the trait value2 to 5
+    give num the trait sum to num value1 + num value2
+    say num sum
 
-# Define a Head class that inherits from Character
-class Head from Character
-  create with (shape color)
-    set head shape to shape
-    set head color to color
-  end create
-end class
+    give str the trait value1 to "Hello "
+    give str the trait value2 to "World"
+    give str the trait greeting to str value1 + str value2
+    say str greeting
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split("\n")
+    assert lines[0].strip() == "15"
+    assert lines[1].strip() == "Hello World"
 
-# Define an Arm class that inherits from Character
-class Arm from Character
-  create with (length position)
-    set arm length to length
-    set arm position to position
-  end create
-end class
+def test_repeat_loop(capsys):
+    code = """
+    give my the trait count to 0
+    repeat 3 times
+      give my the trait count to my count + 1
+    end repeat
+    say my count
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "3"
 
-# Create and customize a character
-create Character Alice with "Alice"
+def test_until_loop(capsys):
+    code = """
+    give my the trait count to 0
+    until my count == 3
+      give my the trait count to my count + 1
+    end until
+    say my count
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "3"
 
-# Attach parts to Alice
-create Head AliceHead with "round" "red"
-attach Head to Alice
+def test_when_otherwise(capsys):
+    code = """
+    give test the trait value to 10
+    when test value > 5
+      give test the trait result to "Greater"
+    otherwise
+      give test the trait result to "Lesser"
+    end when
+    say test result
 
-# Create arm AliceArm with "long" "left"
-create Arm AliceArm with "long" "left"
-attach Arm to Alice
+    give test the trait value to 3
+    when test value > 5
+      give test the trait result2 to "Greater"
+    otherwise
+      give test the trait result2 to "Lesser"
+    end when
+    say test result2
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split("\n")
+    assert lines[0].strip() == "Greater"
+    assert lines[1].strip() == "Lesser"
 
-# Set and update variables
-create Character Bob with "Bob"
-set Bob age to 10
-set Bob favorite color to "blue"
+def test_creature_action_and_self(capsys):
+    code = """
+    creature Dragon
+      when born with (name color)
+        give self the trait name to name
+        give self the trait color to color
+        give self the trait health to 100
+      end born
 
-# Loop: Bob grows older each time
-repeat 5 times
-  set Bob age to Bob age + 1
-end repeat
+      action breathe fire
+        say self name + " breathes " + self color + " fire!"
+        give self the trait health to self health - 10
+      end action
+    end creature
 
-# Conditional logic
-if Bob age > 5
-  set Bob favorite color to "red"
-else
-  set Bob favorite color to "green"
-end if
+    bring Ember to life as Dragon with ("Ember" "red")
+    Ember does breathe fire
+    say Ember health
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split("\n")
+    assert lines[0].strip() == "Ember breathes red fire!"
+    assert lines[1].strip() == "90"
 
-# Input and output
-ask "What is your favorite color?"
-set Bob favorite color to (input)
-say "Bob's favorite color is " + Bob favorite color
+def test_deprecated_compatibility(capsys):
+    code = """
+    class Character
+      create with (given_name)
+        set self name to given_name
+      end create
+      method describe
+        say self name
+      end method
+    end class
 
-# Bob introduces himself
-call Bob describe
-'''
-
-def run_test():
-    # Tokenize
-    print("Tokens:")
-    lexer.input(data)
-    for token in lexer:
-        print(token)
-
-    # Parse
-    print("\nParse Tree:")
-    result = parser.parse(data, debug=True)  # Enable debug mode
-
-    def print_tree(node, indent=""):
-        if isinstance(node, tuple):
-            print(indent + node[0])
-            for item in node[1:]:
-                print_tree(item, indent + "  ")
-        elif isinstance(node, list):
-            for item in node:
-                print_tree(item, indent)
-        else:
-            print(indent + str(node))
-
-    if result:
-        print_tree(result)
-        print("\nTest passed successfully!")
-    else:
-        print("Parsing failed")
-
-if __name__ == "__main__":
-    run_test()
+    create Character bob with "Bob"
+    call bob describe
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "Bob"

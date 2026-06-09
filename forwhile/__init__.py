@@ -1,1 +1,3 @@
-# ForWhile: A children's programming language teaching OOP and core programming concepts.
+from forwhile.interpreter import run_file
+
+__all__ = ['run_file']

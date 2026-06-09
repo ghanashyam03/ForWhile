@@ -1,13 +1,21 @@
 import ply.lex as lex
 
 tokens = (
+    # New world-building tokens
+    'CREATURE', 'BRING', 'LIFE', 'AS', 'GIVE', 'THE', 'TRAIT', 'DOES', 'ACTION',
+    'WHEN', 'OTHERWISE', 'UNTIL', 'BORN',
+    
+    # Deprecated/Legacy tokens (kept for backward compatibility)
     'CLASS', 'END', 'CREATE', 'WITH', 'METHOD', 'FROM', 'SET', 'TO', 'SAY', 'ATTACH',
     'REPEAT', 'TIMES', 'IF', 'ELSE', 'ASK', 'CALL',
-    'IDENTIFIER', 'NUMBER', 'STRING', 'PLUS', 'GT', 'LT', 'EQ', 'NEQ',
+    
+    # Literals and operators
+    'IDENTIFIER', 'NUMBER', 'STRING', 'PLUS', 'MINUS', 'GT', 'LT', 'EQ', 'NEQ',
     'LPAREN', 'RPAREN'
 )
 
 t_PLUS = r'\+'
+t_MINUS = r'-'
 t_GT = r'>'
 t_LT = r'<'
 t_EQ = r'=='
@@ -17,9 +25,45 @@ t_RPAREN = r'\)'
 
 def t_IDENTIFIER(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
-    if t.value.lower() in {'class', 'end', 'create', 'with', 'method', 'from', 'set', 'to', 'say', 'attach',
-                           'repeat', 'times', 'if', 'else', 'ask', 'call'}:
-        t.type = t.value.upper()
+    val_lower = t.value.lower()
+    
+    keywords = {
+        # New syntax
+        'creature': 'CREATURE',
+        'bring': 'BRING',
+        'life': 'LIFE',
+        'as': 'AS',
+        'give': 'GIVE',
+        'the': 'THE',
+        'trait': 'TRAIT',
+        'does': 'DOES',
+        'action': 'ACTION',
+        'when': 'WHEN',
+        'otherwise': 'OTHERWISE',
+        'until': 'UNTIL',
+        'born': 'BORN',
+        
+        # Old/Deprecated syntax (aliases)
+        'class': 'CLASS',
+        'end': 'END',
+        'create': 'CREATE',
+        'with': 'WITH',
+        'method': 'METHOD',
+        'from': 'FROM',
+        'set': 'SET',
+        'to': 'TO',
+        'say': 'SAY',
+        'attach': 'ATTACH',
+        'repeat': 'REPEAT',
+        'times': 'TIMES',
+        'if': 'IF',
+        'else': 'ELSE',
+        'ask': 'ASK',
+        'call': 'CALL'
+    }
+    
+    if val_lower in keywords:
+        t.type = keywords[val_lower]
     return t
 
 def t_NUMBER(t):

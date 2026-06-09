@@ -1,0 +1,15 @@
+creature Character
+  when born with (name)
+    give self the trait name to name
+  end born
+
+  action greet
+    say self name + " says: Hello there!"
+  end action
+end creature
+
+bring Alice to life as Character with ("Alice")
+bring Bob to life as Character with ("Bob")
+
+say Alice name + " meets " + Bob name + "."
+Alice does greet
