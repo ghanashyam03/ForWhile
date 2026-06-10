@@ -2,16 +2,40 @@ import ply.yacc as yacc
 from forwhile.lexer import tokens
 
 def p_program(p):
-    '''program : statements'''
-    p[0] = p[1]
+    '''program : opt_newlines statements
+               | opt_newlines'''
+    if len(p) == 3:
+        p[0] = p[2]
+    else:
+        p[0] = []
+
+def p_opt_newlines(p):
+    '''opt_newlines : opt_newlines NEWLINE
+                    | '''
+    pass
 
 def p_statements(p):
-    '''statements : statements statement
-                  | statement'''
+    '''statements : statements statement_with_newline
+                  | statement_with_newline'''
     if len(p) == 2:
         p[0] = [p[1]]
     else:
         p[0] = p[1] + [p[2]]
+
+def p_statement_with_newline(p):
+    '''statement_with_newline : statement separator
+                              | statement'''
+    p[0] = p[1]
+
+def p_separator(p):
+    '''separator : separator NEWLINE
+                 | NEWLINE'''
+    pass
+
+def p_opt_separator(p):
+    '''opt_separator : separator
+                     | '''
+    pass
 
 def p_statement(p):
     '''statement : class_definition
@@ -19,31 +43,33 @@ def p_statement(p):
                  | set_statement
                  | attach_statement
                  | repeat_statement
+                 | repeat_through_statement
                  | until_statement
                  | if_statement
                  | ask_statement
                  | say_statement
-                 | call_statement'''
+                 | call_statement
+                 | knows_statement
+                 | forgets_statement'''
     p[0] = p[1]
 
 def p_class_definition(p):
-    '''class_definition : CLASS IDENTIFIER class_body END CLASS
-                        | CLASS IDENTIFIER FROM IDENTIFIER class_body END CLASS
-                        | CREATURE IDENTIFIER class_body END CREATURE
-                        | CREATURE IDENTIFIER FROM IDENTIFIER class_body END CREATURE'''
-    if len(p) == 6:
-        # ('CREATURE', name, parent_or_None, members)
-        p[0] = ('CREATURE', p[2], None, p[3])
+    '''class_definition : CLASS IDENTIFIER opt_separator class_body opt_separator END CLASS
+                        | CLASS IDENTIFIER FROM IDENTIFIER opt_separator class_body opt_separator END CLASS
+                        | CREATURE IDENTIFIER opt_separator class_body opt_separator END CREATURE
+                        | CREATURE IDENTIFIER FROM IDENTIFIER opt_separator class_body opt_separator END CREATURE'''
+    if p[3] == 'from':
+        p[0] = ('CREATURE', p[2], p[4], p[6])
     else:
-        p[0] = ('CREATURE', p[2], p[4], p[5])
+        p[0] = ('CREATURE', p[2], None, p[4])
 
 def p_class_body(p):
-    '''class_body : class_body class_member
+    '''class_body : class_body separator class_member
                   | class_member'''
     if len(p) == 2:
         p[0] = [p[1]]
     else:
-        p[0] = p[1] + [p[2]]
+        p[0] = p[1] + [p[3]]
 
 def p_class_member(p):
     '''class_member : constructor
@@ -51,20 +77,20 @@ def p_class_member(p):
     p[0] = p[1]
 
 def p_constructor(p):
-    '''constructor : CREATE WITH LPAREN parameters RPAREN statements END CREATE
-                   | WHEN BORN WITH LPAREN parameters RPAREN statements END BORN
-                   | WHEN BORN statements END BORN'''
+    '''constructor : CREATE WITH LPAREN parameters RPAREN opt_separator statements opt_separator END CREATE
+                   | WHEN BORN WITH LPAREN parameters RPAREN opt_separator statements opt_separator END BORN
+                   | WHEN BORN opt_separator statements opt_separator END BORN'''
     if p[1] == 'create':
-        p[0] = ('WHEN_BORN', p[4], p[6])
-    elif p[1] == 'when' and len(p) == 10:
-        p[0] = ('WHEN_BORN', p[5], p[7])
+        p[0] = ('WHEN_BORN', p[4], p[7])
+    elif p[1] == 'when' and p[2] == 'born' and p[3] == 'with':
+        p[0] = ('WHEN_BORN', p[5], p[8])
     else:
-        p[0] = ('WHEN_BORN', [], p[3])
+        p[0] = ('WHEN_BORN', [], p[4])
 
 def p_method(p):
-    '''method : METHOD IDENTIFIER statements END METHOD
-              | ACTION action_name statements END ACTION'''
-    p[0] = ('ACTION', p[2], p[3])
+    '''method : METHOD IDENTIFIER opt_separator statements opt_separator END METHOD
+              | ACTION action_name opt_separator statements opt_separator END ACTION'''
+    p[0] = ('ACTION', p[2], p[4])
 
 def p_action_name(p):
     '''action_name : IDENTIFIER
@@ -77,6 +103,14 @@ def p_action_name(p):
 def p_parameters(p):
     '''parameters : parameters IDENTIFIER
                   | IDENTIFIER'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_attribute_path(p):
+    '''attribute_path : IDENTIFIER
+                      | attribute_path IDENTIFIER'''
     if len(p) == 2:
         p[0] = [p[1]]
     else:
@@ -101,29 +135,40 @@ def p_create_statement(p):
             p[0] = ('BRING_TO_LIFE', creature, instance, None)
 
 def p_set_statement(p):
-    '''set_statement : SET IDENTIFIER IDENTIFIER TO expression
-                     | GIVE IDENTIFIER THE TRAIT IDENTIFIER TO expression'''
+    '''set_statement : SET attribute_path TO expression
+                     | GIVE attribute_path THE TRAIT IDENTIFIER TO expression'''
     if p[1] == 'set':
-        p[0] = ('GIVE_TRAIT', p[2], p[3], p[5])
+        obj_path = p[2][:-1]
+        attr_name = p[2][-1]
+        p[0] = ('GIVE_TRAIT', obj_path, attr_name, p[4])
     else:
         p[0] = ('GIVE_TRAIT', p[2], p[5], p[7])
 
 def p_attach_statement(p):
-    '''attach_statement : ATTACH IDENTIFIER TO IDENTIFIER'''
+    '''attach_statement : ATTACH expression TO expression'''
     p[0] = ('ATTACH', p[2], p[4])
 
 def p_repeat_statement(p):
-    '''repeat_statement : REPEAT NUMBER TIMES statements END REPEAT'''
-    p[0] = ('REPEAT', p[2], p[4])
+    '''repeat_statement : REPEAT expression TIMES opt_separator statements opt_separator END REPEAT'''
+    p[0] = ('REPEAT', p[2], p[5])
+
+def p_repeat_through_statement(p):
+    '''repeat_through_statement : REPEAT THROUGH expression AS attribute_path opt_separator statements opt_separator END REPEAT'''
+    p[0] = ('REPEAT_THROUGH', p[3], p[5], p[7])
 
 def p_until_statement(p):
-    '''until_statement : UNTIL condition statements END UNTIL'''
-    p[0] = ('UNTIL', p[2], p[3])
+    '''until_statement : UNTIL condition opt_separator statements opt_separator END UNTIL'''
+    p[0] = ('UNTIL', p[2], p[4])
 
 def p_if_statement(p):
-    '''if_statement : IF condition statements ELSE statements END IF
-                    | WHEN condition statements OTHERWISE statements END WHEN'''
-    p[0] = ('IF', p[2], p[3], p[5])
+    '''if_statement : IF condition opt_separator statements opt_separator ELSE opt_separator statements opt_separator END IF
+                    | IF condition opt_separator statements opt_separator END IF
+                    | WHEN condition opt_separator statements opt_separator OTHERWISE opt_separator statements opt_separator END WHEN
+                    | WHEN condition opt_separator statements opt_separator END WHEN'''
+    if len(p) == 12:
+        p[0] = ('IF', p[2], p[4], p[8])
+    else:
+        p[0] = ('IF', p[2], p[4], [])
 
 def p_ask_statement(p):
     '''ask_statement : ASK STRING'''
@@ -134,16 +179,41 @@ def p_say_statement(p):
     p[0] = ('SAY', p[2])
 
 def p_call_statement(p):
-    '''call_statement : CALL IDENTIFIER IDENTIFIER
-                      | IDENTIFIER DOES action_name'''
+    '''call_statement : CALL attribute_path
+                      | expression DOES action_name'''
     if p[1] == 'call':
-        p[0] = ('DOES_ACTION', p[2], p[3])
+        instance_path = p[2][:-1]
+        action_name = p[2][-1]
+        p[0] = ('DOES_ACTION', instance_path, action_name)
     else:
         p[0] = ('DOES_ACTION', p[1], p[3])
 
+def p_knows_statement(p):
+    '''knows_statement : expression KNOWS expression
+                       | expression KNOWS expression AS IDENTIFIER'''
+    if len(p) == 4:
+        p[0] = ('KNOWS', p[1], p[3], None)
+    else:
+        p[0] = ('KNOWS', p[1], p[3], p[5])
+
+def p_forgets_statement(p):
+    '''forgets_statement : expression FORGETS IDENTIFIER'''
+    p[0] = ('FORGETS', p[1], p[3])
+
 def p_condition(p):
-    '''condition : IDENTIFIER IDENTIFIER comparison_op expression'''
-    p[0] = ('CONDITION', p[1], p[2], p[3], p[4])
+    '''condition : expression comparison_op expression
+                 | expression KNOWS expression
+                 | expression KNOWS expression AS IDENTIFIER
+                 | expression KNOWS ANYONE AS IDENTIFIER'''
+    if len(p) == 4:
+        if p[2] == 'knows':
+            p[0] = ('KNOWS_COND', p[1], p[3], None)
+        else:
+            p[0] = ('CONDITION', p[1], p[2], p[3])
+    elif len(p) == 6:
+        p[0] = ('KNOWS_COND', p[1], p[3], p[5])
+    else:
+        p[0] = ('CONDITION', p[1], p[2], p[3])
 
 def p_comparison_op(p):
     '''comparison_op : GT
@@ -163,8 +233,7 @@ def p_expression_list(p):
 def p_expression(p):
     '''expression : STRING
                   | NUMBER
-                  | IDENTIFIER
-                  | IDENTIFIER IDENTIFIER
+                  | attribute_path
                   | expression PLUS expression
                   | expression MINUS expression
                   | LPAREN expression_list RPAREN'''

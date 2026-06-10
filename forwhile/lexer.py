@@ -5,13 +5,19 @@ tokens = (
     'CREATURE', 'BRING', 'LIFE', 'AS', 'GIVE', 'THE', 'TRAIT', 'DOES', 'ACTION',
     'WHEN', 'OTHERWISE', 'UNTIL', 'BORN',
     
+    # Relationship and collection tokens
+    'KNOWS', 'ANYONE', 'THROUGH', 'FORGETS',
+    
     # Deprecated/Legacy tokens (kept for backward compatibility)
     'CLASS', 'END', 'CREATE', 'WITH', 'METHOD', 'FROM', 'SET', 'TO', 'SAY', 'ATTACH',
     'REPEAT', 'TIMES', 'IF', 'ELSE', 'ASK', 'CALL',
     
     # Literals and operators
     'IDENTIFIER', 'NUMBER', 'STRING', 'PLUS', 'MINUS', 'GT', 'LT', 'EQ', 'NEQ',
-    'LPAREN', 'RPAREN'
+    'LPAREN', 'RPAREN',
+    
+    # Separator
+    'NEWLINE'
 )
 
 t_PLUS = r'\+'
@@ -42,6 +48,13 @@ def t_IDENTIFIER(t):
         'otherwise': 'OTHERWISE',
         'until': 'UNTIL',
         'born': 'BORN',
+        
+        # Relationships & collection syntax
+        'knows': 'KNOWS',
+        'anyone': 'ANYONE',
+        'through': 'THROUGH',
+        'forgets': 'FORGETS',
+        'forget': 'FORGETS',
         
         # Old/Deprecated syntax (aliases)
         'class': 'CLASS',
@@ -76,7 +89,17 @@ def t_STRING(t):
     t.value = t.value[1:-1]  # Remove quotes
     return t
 
-t_ignore = ' \t\n'
+def t_comment(t):
+    r'\#[^\n]*'
+    pass  # Ignore comments
+
+def t_NEWLINE(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+    t.type = 'NEWLINE'
+    return t
+
+t_ignore = ' \t\r'
 
 def t_error(t):
     print(f"Illegal character '{t.value[0]}'")
