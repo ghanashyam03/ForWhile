@@ -1,0 +1,21 @@
+creature Person
+  when born with (name)
+    give self the trait name to name
+  end born
+end creature
+
+bring Parent to life as Person with ("Arthur")
+bring Child1 to life as Person with ("Billy")
+bring Child2 to life as Person with ("Cathy")
+
+# Parent knows child creatures
+Parent knows Child1 as child
+Parent knows Child2 as child
+
+say "Parent's name: " + Parent name
+
+# Iterate through children
+say "Children of Arthur:"
+repeat through Parent children as each child
+  say each child name
+end repeat

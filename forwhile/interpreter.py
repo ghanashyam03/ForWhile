@@ -3,6 +3,11 @@ from forwhile.lexer import lexer
 from forwhile.parser import parser
 from forwhile.errors import ForWhileError, ForWhileSyntaxError, ForWhileRuntimeError
 
+# RELATIONSHIP SYSTEM
+# What it secretly teaches: object references, pointers, graph traversal
+# Why it works: "Alice knows Bob" is the most natural thing in the world.
+# A child understands this before they understand variables.
+
 class Scope:
     """Represents a local variable and active creature scope."""
     def __init__(self, parent=None, interpreter=None):
@@ -64,18 +69,26 @@ class Interpreter:
 
         # Support both legacy SET and new GIVE_TRAIT
         if op in ('GIVE_TRAIT', 'SET'):
-            # ('GIVE_TRAIT', obj, attr, expr)
-            obj = node[1]
+            # ('GIVE_TRAIT', obj_path, attr, expr)
+            obj_path = node[1]
             attr = node[2]
             expr = node[3]
             val = self.evaluate(expr)
 
-            # Resolve obj
-            obj_val = self.lookup(obj)
+            # Resolve obj_path
+            if isinstance(obj_path, list):
+                obj_val = self.resolve_path(obj_path)
+            else:
+                obj_val = self.lookup(obj_path)
+
             if isinstance(obj_val, dict) and '__class__' in obj_val:
                 obj_val[attr] = val
             else:
-                key = f"{obj}.{attr}"
+                if isinstance(obj_path, list):
+                    key = ".".join(obj_path) + f".{attr}"
+                else:
+                    key = f"{obj_path}.{attr}"
+                    
                 if self.current_scope:
                     self.current_scope.set(key, val)
                 else:
@@ -99,68 +112,50 @@ class Interpreter:
                 for stmt in body:
                     self.execute(stmt)
 
+        elif op == 'REPEAT_THROUGH':
+            # ('REPEAT_THROUGH', collection_expr, alias_path, body)
+            collection = self.evaluate(node[1])
+            alias_path = node[2]
+            body = node[3]
+
+            if collection is None:
+                collection = []
+            elif not isinstance(collection, list):
+                collection = [collection]
+
+            alias_key = ".".join(alias_path)
+
+            for item in collection:
+                loop_scope = Scope(parent=self.current_scope, interpreter=self)
+                loop_scope.set(alias_key, item)
+
+                old_scope = self.current_scope
+                self.current_scope = loop_scope
+                try:
+                    for stmt in body:
+                        self.execute(stmt)
+                finally:
+                    self.current_scope = old_scope
+
         elif op == 'UNTIL':
             # ('UNTIL', condition, [list_of_statements])
             cond_node = node[1]
             body = node[2]
 
-            if cond_node[0] != 'CONDITION':
-                raise ForWhileRuntimeError(f"Invalid condition node: {cond_node}")
-
-            obj = cond_node[1]
-            attr = cond_node[2]
-            comp_op = cond_node[3]
-            val_expr = cond_node[4]
-
-            # Loop until condition is met (returns True)
             while True:
-                left_val = self.evaluate(('ATTRIBUTE', obj, attr))
-                right_val = self.evaluate(val_expr)
-
-                if comp_op == '>':
-                    cond_res = left_val > right_val
-                elif comp_op == '<':
-                    cond_res = left_val < right_val
-                elif comp_op == '==':
-                    cond_res = left_val == right_val
-                elif comp_op == '!=':
-                    cond_res = left_val != right_val
-                else:
-                    raise ForWhileRuntimeError(f"Unknown comparison operator: {comp_op}")
-
+                cond_res = self.evaluate_condition(cond_node)
                 if cond_res:
                     break
-
                 for stmt in body:
                     self.execute(stmt)
 
         elif op == 'IF':
-            # ('IF', ('CONDITION', obj, attr, op, value), [then_stmts], [else_stmts])
+            # ('IF', condition_node, [then_stmts], [else_stmts])
             cond_node = node[1]
             then_stmts = node[2]
             else_stmts = node[3]
 
-            if cond_node[0] != 'CONDITION':
-                raise ForWhileRuntimeError(f"Invalid condition node: {cond_node}")
-
-            obj = cond_node[1]
-            attr = cond_node[2]
-            comp_op = cond_node[3]
-            val_expr = cond_node[4]
-
-            left_val = self.evaluate(('ATTRIBUTE', obj, attr))
-            right_val = self.evaluate(val_expr)
-
-            if comp_op == '>':
-                cond_res = left_val > right_val
-            elif comp_op == '<':
-                cond_res = left_val < right_val
-            elif comp_op == '==':
-                cond_res = left_val == right_val
-            elif comp_op == '!=':
-                cond_res = left_val != right_val
-            else:
-                raise ForWhileRuntimeError(f"Unknown comparison operator: {comp_op}")
+            cond_res = self.evaluate_condition(cond_node)
 
             if cond_res:
                 for stmt in then_stmts:
@@ -179,7 +174,6 @@ class Interpreter:
             constructor = None
             methods = {}
             for member in members:
-                # Support both new WHEN_BORN / ACTION and legacy CONSTRUCTOR / METHOD
                 if member[0] in ('WHEN_BORN', 'CONSTRUCTOR'):
                     constructor = member
                 elif member[0] in ('ACTION', 'METHOD'):
@@ -198,7 +192,7 @@ class Interpreter:
             instance_name = node[2]
             args_node = node[3]
 
-            # 1. Evaluate args BEFORE creating and binding the new object to avoid resolution conflicts
+            # 1. Evaluate args first
             arg_vals = []
             if args_node is not None:
                 if isinstance(args_node, list):
@@ -206,9 +200,10 @@ class Interpreter:
                 else:
                     arg_vals = [self.evaluate(args_node)]
 
-            # 2. Instantiate and store
+            # 2. Create and store with relationship support
             new_obj = {
-                '__class__': class_name
+                '__class__': class_name,
+                '__knows__': {}
             }
             self.env[instance_name] = new_obj
 
@@ -217,7 +212,6 @@ class Interpreter:
                 params = constructor[1]
                 body = constructor[2]
 
-                # Push context stack
                 self.context_stack.append({'self': new_obj})
 
                 constructor_scope = Scope(parent=self.current_scope, interpreter=self)
@@ -241,16 +235,24 @@ class Interpreter:
                     self.context_stack.pop()
 
         elif op == 'ATTACH':
-            # ('ATTACH', 'PartClass', 'TargetInstance')
-            part_class = node[1]
-            target_instance = node[2]
+            # ('ATTACH', part_path, target_path)
+            part_path = node[1]
+            target_path = node[2]
 
-            target_obj = self.lookup(target_instance)
+            if isinstance(target_path, list):
+                target_obj = self.resolve_path(target_path)
+            else:
+                target_obj = self.lookup(target_path)
+
             if not isinstance(target_obj, dict) or '__class__' not in target_obj:
-                raise ForWhileRuntimeError(f"Target '{target_instance}' is not a valid creature instance")
+                print_name = " ".join(target_path) if isinstance(target_path, list) else target_path
+                raise ForWhileRuntimeError(f"Target '{print_name}' is not a valid creature instance")
+
+            part_class = part_path[0] if isinstance(part_path, list) else part_path
 
             part_obj = {
-                '__class__': part_class
+                '__class__': part_class,
+                '__knows__': {}
             }
 
             constructor = self.find_constructor(part_class)
@@ -277,20 +279,24 @@ class Interpreter:
 
         # Support both legacy CALL and new DOES_ACTION
         elif op in ('DOES_ACTION', 'CALL'):
-            # ('DOES_ACTION', 'instanceName', 'actionName')
-            instance_name = node[1]
+            # ('DOES_ACTION', instance_path, actionName)
+            instance_path = node[1]
             action_name = node[2]
 
-            obj_dict = self.lookup(instance_name)
+            if isinstance(instance_path, list):
+                obj_dict = self.resolve_path(instance_path)
+            else:
+                obj_dict = self.lookup(instance_path)
+
             if not isinstance(obj_dict, dict) or '__class__' not in obj_dict:
-                raise ForWhileRuntimeError(f"'{instance_name}' is not a valid creature instance")
+                print_name = " ".join(instance_path) if isinstance(instance_path, list) else instance_path
+                raise ForWhileRuntimeError(f"'{print_name}' is not a valid creature instance")
 
             class_name = obj_dict['__class__']
             action_body = self.find_method(class_name, action_name)
             if not action_body:
                 raise ForWhileRuntimeError(f"Action '{action_name}' not found in creature '{class_name}' (or its parents)")
 
-            # Push context stack
             self.context_stack.append({'self': obj_dict})
 
             action_scope = Scope(parent=self.current_scope, interpreter=self)
@@ -304,6 +310,50 @@ class Interpreter:
                 self.current_scope = old_scope
                 self.context_stack.pop()
 
+        elif op == 'KNOWS':
+            # ('KNOWS', a, b, role)
+            a_path = node[1]
+            b_path = node[2]
+            role = node[3]
+
+            a_obj = self.resolve_path(a_path)
+            b_obj = self.resolve_path(b_path)
+
+            if not isinstance(a_obj, dict) or '__class__' not in a_obj:
+                print_name = " ".join(a_path)
+                raise ForWhileRuntimeError(f"'{print_name}' is not a valid creature instance")
+            if not isinstance(b_obj, dict) or '__class__' not in b_obj:
+                print_name = " ".join(b_path)
+                raise ForWhileRuntimeError(f"'{print_name}' is not a valid creature instance")
+
+            if role is None:
+                role = b_obj['__class__'].lower()
+
+            knows_dict = a_obj['__knows__']
+            if role in knows_dict:
+                existing = knows_dict[role]
+                if isinstance(existing, list):
+                    if b_obj not in existing:
+                        existing.append(b_obj)
+                else:
+                    if existing != b_obj:
+                        knows_dict[role] = [existing, b_obj]
+            else:
+                knows_dict[role] = b_obj
+
+        elif op == 'FORGETS':
+            # ('FORGETS', name_path, role)
+            name_path = node[1]
+            role = node[2]
+
+            obj = self.resolve_path(name_path)
+            if not isinstance(obj, dict) or '__class__' not in obj:
+                print_name = " ".join(name_path)
+                raise ForWhileRuntimeError(f"'{print_name}' is not a valid creature instance")
+
+            if '__knows__' in obj and role in obj['__knows__']:
+                del obj['__knows__'][role]
+
         else:
             raise ForWhileRuntimeError(f"Unknown node type: {op}")
 
@@ -315,6 +365,9 @@ class Interpreter:
             if val is not None:
                 return val
             return expr
+        if isinstance(expr, list):
+            # Resolve attribute path directly
+            return self.resolve_path(expr)
         if isinstance(expr, tuple):
             op = expr[0]
             if op == 'ADD':
@@ -330,22 +383,123 @@ class Interpreter:
             elif op == 'ATTRIBUTE':
                 obj = expr[1]
                 attr = expr[2]
-                obj_val = self.lookup(obj)
-                if isinstance(obj_val, dict) and '__class__' in obj_val:
-                    if attr in obj_val:
-                        return obj_val[attr]
-                    raise ForWhileRuntimeError(f"Trait '{attr}' not found on creature '{obj}'")
-                else:
-                    key = f"{obj}.{attr}"
-                    val = self.lookup(key)
-                    if val is not None:
-                        return val
-                    raise ForWhileRuntimeError(f"Trait '{obj} {attr}' is not defined")
+                return self.resolve_path([obj, attr])
             elif op == 'INPUT':
                 return input()
             else:
                 raise ForWhileRuntimeError(f"Unknown expression type: {op}")
         raise ForWhileRuntimeError(f"Invalid expression: {expr}")
+
+    def resolve_path(self, path):
+        if not path:
+            return None
+
+        # 1. Try flat joined key first
+        joined = ".".join(path)
+        val = self.lookup(joined)
+        if val is not None:
+            return val
+
+        # 2. Try longest prefix matching
+        val = None
+        prefix_len = 0
+        for i in range(len(path), 0, -1):
+            prefix = ".".join(path[:i])
+            val = self.lookup(prefix)
+            if val is not None:
+                prefix_len = i
+                break
+
+        if prefix_len == 0:
+            if len(path) == 1:
+                return path[0]
+            raise ForWhileRuntimeError(f"Creature or variable '{path[0]}' is not defined")
+
+        # 3. Traverse path attributes & relationships
+        for attr in path[prefix_len:]:
+            if isinstance(val, dict):
+                if attr in val:
+                    val = val[attr]
+                elif '__knows__' in val:
+                    knows = val['__knows__']
+                    if attr in knows:
+                        val = knows[attr]
+                    elif attr.endswith('s') and attr[:-1] in knows:
+                        val = knows[attr[:-1]]
+                        if not isinstance(val, list):
+                            val = [val]
+                    elif attr == 'children' and 'child' in knows:
+                        val = knows['child']
+                        if not isinstance(val, list):
+                            val = [val]
+                    else:
+                        raise ForWhileRuntimeError(f"Trait or relationship '{attr}' not found on creature '{val.get('name', 'creature')}'")
+                else:
+                    raise ForWhileRuntimeError(f"Trait '{attr}' not found on creature")
+            else:
+                raise ForWhileRuntimeError(f"Cannot access attribute '{attr}' on non-creature value")
+
+        return val
+
+    def evaluate_condition(self, cond_node):
+        if cond_node[0] == 'CONDITION':
+            left_path = cond_node[1]
+            comp_op = cond_node[2]
+            val_expr = cond_node[3]
+
+            left_val = self.resolve_path(left_path)
+            right_val = self.evaluate(val_expr)
+
+            if comp_op == '>':
+                return left_val > right_val
+            elif comp_op == '<':
+                return left_val < right_val
+            elif comp_op == '==':
+                return left_val == right_val
+            elif comp_op == '!=':
+                return left_val != right_val
+            else:
+                raise ForWhileRuntimeError(f"Unknown comparison operator: {comp_op}")
+
+        elif cond_node[0] == 'KNOWS_COND':
+            obj_path = cond_node[1]
+            other_val = cond_node[2]  # Can be list representing path, or string 'anyone'
+            role = cond_node[3]
+
+            obj = self.resolve_path(obj_path)
+            if not isinstance(obj, dict) or '__class__' not in obj:
+                print_name = " ".join(obj_path)
+                raise ForWhileRuntimeError(f"'{print_name}' is not a valid creature instance")
+
+            knows_dict = obj.get('__knows__', {})
+
+            if other_val == 'anyone':
+                if role is None:
+                    return len(knows_dict) > 0
+                return role in knows_dict
+            else:
+                other_obj = self.resolve_path(other_val)
+                if not isinstance(other_obj, dict) or '__class__' not in other_obj:
+                    print_name = " ".join(other_val)
+                    raise ForWhileRuntimeError(f"'{print_name}' is not a valid creature instance")
+
+                if role is None:
+                    for val in knows_dict.values():
+                        if isinstance(val, list):
+                            if other_obj in val:
+                                return True
+                        elif val == other_obj:
+                            return True
+                    return False
+                else:
+                    if role not in knows_dict:
+                        return False
+                    val = knows_dict[role]
+                    if isinstance(val, list):
+                        return other_obj in val
+                    return val == other_obj
+
+        raise ForWhileRuntimeError(f"Unknown condition type: {cond_node[0]}")
 
     def lookup(self, name):
         if name == 'self' and self.context_stack:

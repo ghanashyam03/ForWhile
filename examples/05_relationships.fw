@@ -1,0 +1,24 @@
+creature Villager
+  when born with (name)
+    give self the trait name to name
+  end born
+end creature
+
+bring Alice to life as Villager with ("Alice")
+bring Bob to life as Villager with ("Bob")
+bring Charlie to life as Villager with ("Charlie")
+
+# Relationship forming
+Alice knows Bob as friend
+
+# Relationship navigation (works when there is a single friend)
+say "Alice's friend's name is: " + Alice friend name
+
+# Adding another friend to form a group of friends
+Alice knows Charlie as friend
+
+# Group iteration (using plural 'friends')
+say "Alice introduces her friends:"
+repeat through Alice friends as each friend
+  say each friend name
+end repeat

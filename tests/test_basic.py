@@ -134,3 +134,100 @@ def test_deprecated_compatibility(capsys):
     interpreter.run(ast)
     captured = capsys.readouterr()
     assert captured.out.strip() == "Bob"
+
+def test_relationships_and_navigation(capsys):
+    code = """
+    creature Person
+      when born with (name)
+        give self the trait name to name
+      end born
+      action greet
+        say self name + " says hello!"
+      end action
+    end creature
+
+    bring Alice to life as Person with ("Alice")
+    bring Bob to life as Person with ("Bob")
+
+    Alice knows Bob as friend
+    say Alice friend name
+    Alice friend does greet
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split("\n")
+    assert lines[0].strip() == "Bob"
+    assert lines[1].strip() == "Bob says hello!"
+
+def test_relationship_groups_and_iteration(capsys):
+    code = """
+    creature Person
+      when born with (name)
+        give self the trait name to name
+      end born
+    end creature
+
+    bring Alice to life as Person with ("Alice")
+    bring Bob to life as Person with ("Bob")
+    bring Carol to life as Person with ("Carol")
+
+    Alice knows Bob as friend
+    Alice knows Carol as friend
+
+    repeat through Alice friends as each friend
+      say each friend name
+    end repeat
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    lines = [line.strip() for line in captured.out.strip().split("\n") if line.strip()]
+    assert "Bob" in lines
+    assert "Carol" in lines
+    assert len(lines) == 2
+
+def test_relationship_conditions_and_forget(capsys):
+    code = """
+    creature Person
+      when born with (name)
+        give self the trait name to name
+      end born
+    end creature
+
+    bring Alice to life as Person with ("Alice")
+    bring Bob to life as Person with ("Bob")
+
+    when Alice knows Bob
+      say "Unexpected"
+    otherwise
+      say "Disconnected"
+    end when
+
+    Alice knows Bob as friend
+    when Alice knows Bob as friend
+      say "Connected"
+    end when
+
+    when Alice knows anyone as friend
+      say "Has friend"
+    end when
+
+    Alice forgets friend
+    when Alice knows anyone as friend
+      say "Has friend still"
+    otherwise
+      say "Lonely"
+    end when
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    lines = [line.strip() for line in captured.out.strip().split("\n") if line.strip()]
+    assert lines[0] == "Disconnected"
+    assert lines[1] == "Connected"
+    assert lines[2] == "Has friend"
+    assert lines[3] == "Lonely"
