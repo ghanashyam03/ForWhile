@@ -231,3 +231,71 @@ def test_relationship_conditions_and_forget(capsys):
     assert lines[1] == "Connected"
     assert lines[2] == "Has friend"
     assert lines[3] == "Lonely"
+
+def test_trait_change_reaction(capsys):
+    code = """
+    creature Fire
+      when born
+        give self the trait brightness to 50
+      end born
+    end creature
+
+    bring my_fire to life as Fire
+
+    whenever my_fire gets trait brightness changed
+      say "Brightness is now " + my_fire brightness
+    end whenever
+
+    give my_fire the trait brightness to 80
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    lines = [l.strip() for l in captured.out.split("\n") if l.strip()]
+    assert "Brightness is now 80" in lines
+
+def test_death_event_and_context(capsys):
+    code = """
+    creature Villager
+      when born with (name)
+        give self the trait name to name
+      end born
+    end creature
+
+    bring bob to life as Villager with ("Bob")
+
+    whenever anyone dies
+      announce the one who died name + " has left us."
+    end whenever
+
+    remove bob from world
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.run(ast)
+    captured = capsys.readouterr()
+    lines = [l.strip() for l in captured.out.split("\n") if l.strip()]
+    assert "[World] Bob has left us." in lines
+
+def test_infinite_loop_prevention():
+    code = """
+    creature Villager
+      when born
+        give self the trait value to 0
+      end born
+    end creature
+
+    bring bob to life as Villager
+
+    whenever bob gets trait value changed
+      give bob the trait value to bob value + 1
+    end whenever
+
+    give bob the trait value to 1
+    """
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    with pytest.raises(Exception) as excinfo:
+        interpreter.run(ast)
+    assert "The world is stuck in a loop!" in str(excinfo.value)

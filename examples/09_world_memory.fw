@@ -1,0 +1,29 @@
+# Kingdom Simulation
+# Tracks global gold, population, and year in the world memory.
+# Secretly teaches: global state, simulation loops, threshold triggers.
+
+the world remembers gold as 100
+the world remembers population as 10
+the world remembers year as 1
+
+# Run the simulation until the kingdom runs out of gold
+until the world knows gold == 0
+  say "Year " + the world knows year + ":"
+  say "  Population: " + the world knows population
+  say "  Gold: " + the world knows gold
+  
+  # Population grows by 2 each year
+  the world remembers population as the world knows population + 2
+  
+  # Gold decreases based on the population size
+  when the world knows population > the world knows gold
+    # The kingdom consumes all remaining gold
+    the world remembers gold as 0
+  otherwise
+    the world remembers gold as the world knows gold - the world knows population
+  end when
+  
+  the world remembers year as the world knows year + 1
+end until
+
+announce "The kingdom has fallen."

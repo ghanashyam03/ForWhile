@@ -8,6 +8,12 @@ from forwhile.errors import ForWhileError, ForWhileSyntaxError, ForWhileRuntimeE
 # Why it works: "Alice knows Bob" is the most natural thing in the world.
 # A child understands this before they understand variables.
 
+# EVENT SYSTEM
+# What it secretly teaches: event-driven programming, the observer
+# pattern, callbacks, reactive state
+# Why it works: children know that the world reacts to things.
+# "When the door opens, the bell rings" needs no explanation.
+
 class Scope:
     """Represents a local variable and active creature scope."""
     def __init__(self, parent=None, interpreter=None):
@@ -19,6 +25,20 @@ class Scope:
         if self.interpreter and self.interpreter.context_stack:
             return self.interpreter.context_stack[-1]['self']
         return None
+
+    def get_local_var(self, name):
+        if name in self.vars:
+            return self.vars[name]
+        if self.parent:
+            return self.parent.get_local_var(name)
+        return None
+
+    def exists_local_var(self, name):
+        if name in self.vars:
+            return True
+        if self.parent:
+            return self.parent.exists_local_var(name)
+        return False
 
     def get(self, name):
         if name in self.vars:
@@ -54,6 +74,10 @@ class Interpreter:
         self.classes = {}
         self.current_scope = None
         self.context_stack = []  # Keeps track of {'self': instance_dict}
+        self.event_rules = []
+        self.event_depth = 0
+        self.event_context = {}
+        self.world_memory = {}
 
     def run(self, ast):
         if not ast:
@@ -83,6 +107,10 @@ class Interpreter:
 
             if isinstance(obj_val, dict) and '__class__' in obj_val:
                 obj_val[attr] = val
+                # Fire event rule
+                subject_name = self.get_instance_name(obj_val)
+                if subject_name:
+                    self.fire_event('TRAIT_CHANGED', subject_name, attr)
             else:
                 if isinstance(obj_path, list):
                     key = ".".join(obj_path) + f".{attr}"
@@ -203,7 +231,8 @@ class Interpreter:
             # 2. Create and store with relationship support
             new_obj = {
                 '__class__': class_name,
-                '__knows__': {}
+                '__knows__': {},
+                '__name__': instance_name
             }
             self.env[instance_name] = new_obj
 
@@ -233,6 +262,9 @@ class Interpreter:
                 finally:
                     self.current_scope = old_scope
                     self.context_stack.pop()
+
+            # Fire is born event
+            self.fire_event('DOES_ACTION', instance_name, 'is born')
 
         elif op == 'ATTACH':
             # ('ATTACH', part_path, target_path)
@@ -310,6 +342,11 @@ class Interpreter:
                 self.current_scope = old_scope
                 self.context_stack.pop()
 
+            # Fire event rule
+            subject_name = self.get_instance_name(obj_dict)
+            if subject_name:
+                self.fire_event('DOES_ACTION', subject_name, action_name)
+
         elif op == 'KNOWS':
             # ('KNOWS', a, b, role)
             a_path = node[1]
@@ -354,6 +391,54 @@ class Interpreter:
             if '__knows__' in obj and role in obj['__knows__']:
                 del obj['__knows__'][role]
 
+        elif op == 'WHENEVER':
+            # ('WHENEVER', trigger_type, subject, action_or_trait, body)
+            trigger_type = node[1]
+            subject = node[2]
+            action_or_trait = node[3]
+            body = node[4]
+
+            self.event_rules.append({
+                'trigger': (trigger_type, subject, action_or_trait),
+                'body': body
+            })
+
+        elif op == 'REMOVE':
+            # ('REMOVE', name)
+            name = node[1]
+            if name in self.env:
+                obj = self.env[name]
+                del self.env[name]
+                # Fire dies event
+                self.fire_event('DOES_ACTION', name, 'dies', event_context={'the_one_who_died': obj})
+            else:
+                raise ForWhileRuntimeError(f"Creature or variable '{name}' not found in the world")
+
+        elif op == 'ANNOUNCE':
+            # ('ANNOUNCE', expr)
+            val = self.evaluate(node[1])
+            print(f"[World] {val}")
+
+        elif op == 'WORLD_SET':
+            fact_name = node[1]
+            val = self.evaluate(node[2])
+            self.world_memory[fact_name] = val
+
+        elif op == 'WORLD_FORGET':
+            fact_name = node[1]
+            if fact_name in self.world_memory:
+                del self.world_memory[fact_name]
+            else:
+                raise ForWhileRuntimeError(f"World memory does not contain fact '{fact_name}'")
+
+        elif op == 'SAVE_WORLD':
+            filename = self.evaluate(node[1])
+            self.save_world(filename)
+
+        elif op == 'RESTORE_WORLD':
+            filename = self.evaluate(node[1])
+            self.restore_world(filename)
+
         else:
             raise ForWhileRuntimeError(f"Unknown node type: {op}")
 
@@ -386,6 +471,27 @@ class Interpreter:
                 return self.resolve_path([obj, attr])
             elif op == 'INPUT':
                 return input()
+            elif op == 'WORLD_GET':
+                fact_name = expr[1]
+                if fact_name in self.world_memory:
+                    return self.world_memory[fact_name]
+                raise ForWhileRuntimeError(f"World memory does not contain fact '{fact_name}'")
+            elif op == 'WORLD_ROSTER':
+                creature_name = expr[1]
+                res = []
+                for name, val in self.env.items():
+                    if isinstance(val, dict) and '__class__' in val:
+                        if self.is_instance_of(val['__class__'], creature_name):
+                            res.append(val)
+                return res
+            elif op == 'WORLD_COUNTS':
+                creature_name = expr[1]
+                count = 0
+                for name, val in self.env.items():
+                    if isinstance(val, dict) and '__class__' in val:
+                        if self.is_instance_of(val['__class__'], creature_name):
+                            count += 1
+                return count
             else:
                 raise ForWhileRuntimeError(f"Unknown expression type: {op}")
         raise ForWhileRuntimeError(f"Invalid expression: {expr}")
@@ -447,7 +553,7 @@ class Interpreter:
             comp_op = cond_node[2]
             val_expr = cond_node[3]
 
-            left_val = self.resolve_path(left_path)
+            left_val = self.evaluate(left_path)
             right_val = self.evaluate(val_expr)
 
             if comp_op == '>':
@@ -501,13 +607,64 @@ class Interpreter:
 
         raise ForWhileRuntimeError(f"Unknown condition type: {cond_node[0]}")
 
+    def get_instance_name(self, obj_dict):
+        if not isinstance(obj_dict, dict):
+            return None
+        for name, val in self.env.items():
+            if val is obj_dict:
+                return name
+        return obj_dict.get('__name__', None)
+
+    def fire_event(self, trigger_type, subject, action_or_trait, event_context=None):
+        # Prevent infinite loops
+        self.event_depth += 1
+        if self.event_depth > 10:
+            raise ForWhileRuntimeError("The world is stuck in a loop! (event chain deeper than 10)")
+        
+        # Save old event context
+        old_context = getattr(self, 'event_context', None)
+        self.event_context = event_context if event_context is not None else {}
+        
+        try:
+            # Find and execute all matching rules
+            for rule in self.event_rules:
+                r_type, r_sub, r_act_or_trait = rule['trigger']
+                if r_type == trigger_type:
+                    # Match subject: exact match or rule's subject is 'anyone'
+                    if r_sub == 'anyone' or r_sub == subject:
+                        # Match action/trait:
+                        if r_act_or_trait == action_or_trait:
+                            # Execute rule body
+                            for stmt in rule['body']:
+                                self.execute(stmt)
+        finally:
+            self.event_context = old_context
+            self.event_depth -= 1
+
     def lookup(self, name):
+        # SCOPING
+        # What it secretly teaches: local vs global scope, name resolution order
+        # self.traits → local scope
+        # world memory → global scope
+        # The lookup order makes scope intuitive without naming it.
         if name == 'self' and self.context_stack:
             return self.context_stack[-1]['self']
-        if self.current_scope and self.current_scope.exists(name):
-            return self.current_scope.get(name)
+        if name == 'the.one.who.died' and getattr(self, 'event_context', None) and 'the_one_who_died' in self.event_context:
+            return self.event_context['the_one_who_died']
+        
+        # 1. Local variable scope chain (parameters, loop aliases, local variables)
+        if self.current_scope and self.current_scope.exists_local_var(name):
+            return self.current_scope.get_local_var(name)
+            
+        # 2. Active creature's traits
+        active_creature = self.context_stack[-1]['self'] if self.context_stack else None
+        if active_creature and isinstance(active_creature, dict) and name in active_creature:
+            return active_creature[name]
+            
+        # 3. Global environment (creatures/globals)
         if name in self.env:
             return self.env[name]
+            
         return None
 
     def find_constructor(self, class_name):
@@ -529,6 +686,133 @@ class Interpreter:
         if cls['parent']:
             return self.find_method(cls['parent'], method_name)
         return None
+
+    def is_instance_of(self, class_name, target_class):
+        curr = class_name
+        while curr:
+            if curr == target_class:
+                return True
+            cls_info = self.classes.get(curr)
+            if cls_info:
+                curr = cls_info.get('parent')
+            else:
+                break
+        return False
+
+    def save_world(self, filename):
+        serialized_creatures = {}
+        serialized_variables = {}
+        
+        # Identify all top-level creatures in env
+        creature_names = set()
+        for name, val in self.env.items():
+            if isinstance(val, dict) and '__class__' in val:
+                creature_names.add(name)
+                
+        def to_jsonable(val, current_creature_name=None, trait_name=None):
+            if isinstance(val, (int, float, str, bool)) or val is None:
+                return val
+            if isinstance(val, list):
+                res = []
+                for item in val:
+                    try:
+                        res.append(to_jsonable(item, current_creature_name, trait_name))
+                    except TypeError:
+                        print(f"Warning: could not save {current_creature_name or 'world'}'s {trait_name or 'list item'}")
+                return res
+            if isinstance(val, dict):
+                # If it is a top-level creature reference
+                if '__class__' in val and '__name__' in val and val['__name__'] in creature_names and self.env[val['__name__']] is val:
+                    return {'__ref__': val['__name__']}
+                # Otherwise, serialize the dict inline
+                res = {}
+                for k, v in val.items():
+                    try:
+                        res[k] = to_jsonable(v, current_creature_name or val.get('__name__') or val.get('__class__'), k)
+                    except TypeError:
+                        print(f"Warning: could not save {current_creature_name or val.get('__name__') or val.get('__class__') or 'creature'}'s {k}")
+                return res
+            raise TypeError(f"Type {type(val)} is not serializable")
+
+        # Serialize top-level creatures
+        for name in creature_names:
+            creature_dict = self.env[name]
+            res = {}
+            for k, v in creature_dict.items():
+                try:
+                    res[k] = to_jsonable(v, name, k)
+                except TypeError:
+                    print(f"Warning: could not save {name}'s {k}")
+            serialized_creatures[name] = res
+            
+        # Serialize top-level variables
+        for name, val in self.env.items():
+            if name not in creature_names:
+                try:
+                    serialized_variables[name] = to_jsonable(val, 'world', name)
+                except TypeError:
+                    print(f"Warning: could not save world's {name}")
+                    
+        data = {
+            'world_memory': self.world_memory,
+            'creatures': serialized_creatures,
+            'variables': serialized_variables
+        }
+        
+        import json
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+
+    def restore_world(self, filename):
+        import json
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            raise ForWhileRuntimeError(f"World save file '{filename}' not found")
+            
+        # Clear current env and world memory
+        self.env.clear()
+        self.world_memory = data.get('world_memory', {})
+        
+        # Step 1: Recreate all creature dicts (without resolving references)
+        creatures_data = data.get('creatures', {})
+        restored_creatures = {}
+        for name, c_data in creatures_data.items():
+            restored_creatures[name] = {
+                '__class__': c_data['__class__'],
+                '__knows__': {},
+                '__name__': c_data.get('__name__', name)
+            }
+            self.env[name] = restored_creatures[name]
+            
+        # Step 2: Helper to restore values and references recursively
+        def from_jsonable(val):
+            if isinstance(val, dict):
+                if '__ref__' in val:
+                    ref_name = val['__ref__']
+                    if ref_name in restored_creatures:
+                        return restored_creatures[ref_name]
+                    return None
+                res = {}
+                for k, v in val.items():
+                    res[k] = from_jsonable(v)
+                return res
+            if isinstance(val, list):
+                return [from_jsonable(item) for item in val]
+            return val
+            
+        # Step 3: Populate traits of creatures
+        for name, c_data in creatures_data.items():
+            creature_obj = restored_creatures[name]
+            for k, v in c_data.items():
+                if k not in ('__class__', '__name__'):
+                    creature_obj[k] = from_jsonable(v)
+                    
+        # Step 4: Populate variables in env
+        variables_data = data.get('variables', {})
+        for name, val in variables_data.items():
+            self.env[name] = from_jsonable(val)
 
 def run_file(path):
     try:
