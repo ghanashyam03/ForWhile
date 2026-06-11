@@ -1,0 +1,57 @@
+# ForWhile Story Structure Example
+# Secretly teaches: function composition, call stack, narrator/character voice separation.
+
+creature Villager
+  when born with (name)
+    give self the trait name to name
+  end born
+  action yawn
+    say self name + " yawns loudly."
+  end action
+end creature
+
+creature Dragon
+  when born with (name)
+    give self the trait name to name
+  end born
+  action roar
+    say self name + " roars and breathes fire!"
+  end action
+end creature
+
+creature Hero
+  when born with (name)
+    give self the trait name to name
+  end born
+  action draw sword
+    say self name + " draws the legendary sword!"
+  end action
+end creature
+
+bring bob to life as Villager with ("Bob")
+bring Ember to life as Dragon with ("Ember")
+bring Arthur to life as Hero with ("Arthur")
+
+scene the village wakes up
+  announce "Scene 1: Dawn breaks over the village."
+  bob does yawn
+  announce "The village is peaceful."
+end scene
+
+scene the dragon arrives
+  announce "Scene 2: Sudden darkness fills the sky."
+  Ember does roar
+  bob says "Help! A dragon!"
+end scene
+
+scene the hero responds with (hero_char)
+  announce "Scene 3: The hero arrives to defend the village."
+  announce "Our hero, " + hero_char name + ", stands brave."
+  Arthur does draw sword
+  Arthur says "Begone, foul beast!"
+end scene
+
+# Play the story in sequence
+play scene the village wakes up
+play scene the dragon arrives
+play scene the hero responds with (Arthur)

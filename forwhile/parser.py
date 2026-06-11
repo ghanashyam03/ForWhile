@@ -1,6 +1,11 @@
 import ply.yacc as yacc
 from forwhile.lexer import tokens
 
+precedence = (
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES'),
+)
+
 def p_program(p):
     '''program : opt_newlines statements
                | opt_newlines'''
@@ -57,7 +62,13 @@ def p_statement(p):
                  | world_remembers
                  | world_forgets
                  | save_world
-                 | restore_world'''
+                 | restore_world
+                 | scene_definition
+                 | play_scene
+                 | tick_loop
+                 | on_tick
+                 | character_says
+                 | world_strictness'''
     p[0] = p[1]
 
 def p_class_definition(p):
@@ -80,8 +91,46 @@ def p_class_body(p):
 
 def p_class_member(p):
     '''class_member : constructor
-                    | method'''
+                    | method
+                    | traits_block'''
     p[0] = p[1]
+
+def p_traits_block(p):
+    '''traits_block : TRAITS opt_separator trait_defs opt_separator END TRAITS'''
+    p[0] = ('TRAITS_BLOCK', p[3])
+
+def p_trait_defs(p):
+    '''trait_defs : trait_defs separator trait_def
+                  | trait_def'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
+def p_trait_def(p):
+    '''trait_def : IDENTIFIER IS_A WORD
+                 | IDENTIFIER IS_A NUMBER_KIND
+                 | IDENTIFIER IS_A NUMBER_KIND BETWEEN expression AND expression
+                 | IDENTIFIER IS ONE_OF expression
+                 | IDENTIFIER IS TRUE_KEYWORD OR_KEYWORD FALSE_KEYWORD
+                 | IDENTIFIER IS YES OR_KEYWORD NO
+                 | IDENTIFIER IS_A LIST_KIND
+                 | IDENTIFIER IS expression'''
+    if len(p) == 4:
+        if p[2].lower() == 'is':
+            p[0] = ('COMPUTED_TRAIT', p[1], p[3])
+        elif p[3].lower() == 'word':
+            p[0] = ('TRAIT_DEF', p[1], 'word', None)
+        elif p[3].lower() == 'number':
+            p[0] = ('TRAIT_DEF', p[1], 'number', None)
+        elif p[3].lower() == 'list':
+            p[0] = ('TRAIT_DEF', p[1], 'list', None)
+    elif len(p) == 5:
+        p[0] = ('TRAIT_DEF', p[1], 'enum', p[4])
+    elif len(p) == 6:
+        p[0] = ('TRAIT_DEF', p[1], 'boolean', None)
+    elif len(p) == 8:
+        p[0] = ('TRAIT_DEF', p[1], 'number_range', (p[5], p[7]))
 
 def p_constructor(p):
     '''constructor : CREATE WITH LPAREN parameters RPAREN opt_separator statements opt_separator END CREATE
@@ -144,7 +193,8 @@ def p_create_statement(p):
 def p_set_statement(p):
     '''set_statement : SET attribute_path TO expression
                      | GIVE attribute_path IDENTIFIER TRAIT IDENTIFIER TO expression
-                     | GIVE attribute_path TRAIT IDENTIFIER TO expression'''
+                     | GIVE attribute_path TRAIT IDENTIFIER TO expression
+                     | GIVE attribute_path TO expression'''
     if p[1] == 'set':
         obj_path = p[2][:-1]
         attr_name = p[2][-1]
@@ -152,8 +202,12 @@ def p_set_statement(p):
     else:
         if len(p) == 8:
             p[0] = ('GIVE_TRAIT', p[2], p[5], p[7])
-        else:
+        elif len(p) == 7:
             p[0] = ('GIVE_TRAIT', p[2], p[4], p[6])
+        else:
+            obj_path = p[2][:-1]
+            attr_name = p[2][-1]
+            p[0] = ('GIVE_TRAIT', obj_path, attr_name, p[4])
 
 def p_attach_statement(p):
     '''attach_statement : ATTACH expression TO expression'''
@@ -279,7 +333,8 @@ def p_comparison_op(p):
     '''comparison_op : GT
                      | LT
                      | EQ
-                     | NEQ'''
+                     | NEQ
+                     | IS'''
     p[0] = p[1]
 
 def p_expression_list(p):
@@ -296,12 +351,24 @@ def p_expression(p):
                   | attribute_path
                   | expression PLUS expression
                   | expression MINUS expression
+                  | expression TIMES expression
                   | LPAREN expression_list RPAREN
-                  | world_expr'''
+                  | LPAREN RPAREN
+                  | world_expr
+                  | YES
+                  | NO'''
     if len(p) == 2:
-        p[0] = p[1]
+        if isinstance(p[1], str) and p[1].lower() == 'yes':
+            p[0] = True
+        elif isinstance(p[1], str) and p[1].lower() == 'no':
+            p[0] = False
+        else:
+            p[0] = p[1]
     elif len(p) == 3:
-        p[0] = ('ATTRIBUTE', p[1], p[2])
+        if p[1] == '(':
+            p[0] = []
+        else:
+            p[0] = ('ATTRIBUTE', p[1], p[2])
     elif len(p) == 4 and p[1] == '(':
         if len(p[2]) == 1:
             if p[2][0] == 'input':
@@ -309,12 +376,14 @@ def p_expression(p):
             else:
                 p[0] = p[2][0]
         else:
-            p[0] = p[2]
+            p[0] = ('LIST_LITERAL', p[2])
     else:
         if p[2] == '+':
             p[0] = ('ADD', p[1], p[3])
-        else:
+        elif p[2] == '-':
             p[0] = ('MINUS', p[1], p[3])
+        else:
+            p[0] = ('MULTIPLY', p[1], p[3])
 
 def p_world_expr(p):
     '''world_expr : THE_WORLD KNOWS fact_name
@@ -337,6 +406,47 @@ def p_fact_name(p):
         p[0] = p[1]
     else:
         p[0] = p[1] + " " + p[2]
+
+def p_scene_definition(p):
+    '''scene_definition : SCENE scene_name opt_separator statements opt_separator END SCENE
+                        | SCENE scene_name WITH LPAREN parameters RPAREN opt_separator statements opt_separator END SCENE'''
+    if len(p) == 8:
+        p[0] = ('SCENE', p[2], [], p[4])
+    else:
+        p[0] = ('SCENE', p[2], p[5], p[8])
+
+def p_play_scene(p):
+    '''play_scene : PLAY SCENE scene_name
+                  | PLAY SCENE scene_name WITH LPAREN expression_list RPAREN'''
+    if len(p) == 4:
+        p[0] = ('PLAY_SCENE', p[3], [])
+    else:
+        p[0] = ('PLAY_SCENE', p[3], p[6])
+
+def p_tick_loop(p):
+    '''tick_loop : THE_WORLD TICKS expression TIMES opt_separator statements opt_separator END TICKS'''
+    p[0] = ('TICK_LOOP', p[3], p[6])
+
+def p_on_tick(p):
+    '''on_tick : ON_EACH_TICK opt_separator statements opt_separator END TICK'''
+    p[0] = ('ON_TICK', p[3])
+
+def p_character_says(p):
+    '''character_says : IDENTIFIER SAYS expression'''
+    p[0] = ('CHARACTER_SAYS', p[1], p[3])
+
+def p_scene_name(p):
+    '''scene_name : IDENTIFIER
+                  | scene_name IDENTIFIER'''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[1] + " " + p[2]
+
+def p_world_strictness(p):
+    '''world_strictness : THE_WORLD IS STRICT
+                        | THE_WORLD IS LENIENT'''
+    p[0] = ('WORLD_STRICTNESS', p[3].lower())
 
 def p_error(p):
     if p:

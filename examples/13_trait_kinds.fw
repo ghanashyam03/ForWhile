@@ -1,0 +1,47 @@
+# Demonstration of the Trait Kinds System in ForWhile
+# This example showcases all five trait kinds: word, number, number range, enum, and boolean.
+
+the world is lenient
+
+creature MythicalBeast
+  traits
+    name is a word
+    age is a number
+    health is a number between 0 and 100
+    color is one of ("red" "blue" "green" "black")
+    alive is true or false
+    treasures is a list
+  end traits
+
+  when born with (name age color)
+    give self the trait name to name
+    give self the trait age to age
+    give self the trait color to color
+    give self the trait health to 100
+    give self the trait alive to yes
+    give self the trait treasures to ()
+  end born
+
+  action report
+    announce self name + " is " + self age + " years old, color is " + self color + ", health: " + self health + ", alive: " + self alive
+  end action
+end creature
+
+announce "--- 1. Creating a beast with valid traits ---"
+bring draggy to life as MythicalBeast with ("Ignis" 350 "red")
+draggy does report
+
+announce "--- 2. Setting invalid traits in LENIENT mode (warnings & clamping/coercion) ---"
+# Clamping health to 100
+give draggy the trait health to 150
+# Casing normalized from "BLUE" to "blue"
+give draggy the trait color to "BLUE"
+# Non-word assigned to name (warns, keeps)
+give draggy the trait name to 12345
+draggy does report
+
+announce "--- 3. Switching to STRICT mode to trigger a friendly error ---"
+the world is strict
+
+# This will raise a friendly error: "The color 'purple' isn't one of MythicalBeast's allowed colors."
+give draggy the trait color to "purple"
