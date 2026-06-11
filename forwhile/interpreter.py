@@ -78,6 +78,11 @@ class Interpreter:
         self.event_depth = 0
         self.event_context = {}
         self.world_memory = {}
+        self.scenes = {}
+        self.scene_depth = 0
+        self.world_clock = 0
+        self.tick_rules = []
+        self.strictness = 'strict'
 
     def run(self, ast):
         if not ast:
@@ -100,12 +105,24 @@ class Interpreter:
             val = self.evaluate(expr)
 
             # Resolve obj_path
-            if isinstance(obj_path, list):
-                obj_val = self.resolve_path(obj_path)
+            if isinstance(obj_path, list) and len(obj_path) == 0:
+                active_creature = self.context_stack[-1]['self'] if self.context_stack else None
+                if active_creature and '__class__' in active_creature:
+                    class_name = active_creature['__class__']
+                    if self.find_trait_def(class_name, attr) is not None:
+                        obj_val = active_creature
+                    else:
+                        obj_val = None
+                else:
+                    obj_val = None
             else:
-                obj_val = self.lookup(obj_path)
+                if isinstance(obj_path, list):
+                    obj_val = self.resolve_path(obj_path)
+                else:
+                    obj_val = self.lookup(obj_path)
 
             if isinstance(obj_val, dict) and '__class__' in obj_val:
+                val = self.validate_trait_value(obj_val, attr, val)
                 obj_val[attr] = val
                 # Fire event rule
                 subject_name = self.get_instance_name(obj_val)
@@ -113,7 +130,10 @@ class Interpreter:
                     self.fire_event('TRAIT_CHANGED', subject_name, attr)
             else:
                 if isinstance(obj_path, list):
-                    key = ".".join(obj_path) + f".{attr}"
+                    if len(obj_path) == 0:
+                        key = attr
+                    else:
+                        key = ".".join(obj_path) + f".{attr}"
                 else:
                     key = f"{obj_path}.{attr}"
                     
@@ -124,6 +144,8 @@ class Interpreter:
 
         elif op == 'SAY':
             # ('SAY', expr)
+            if not self.context_stack:
+                raise ForWhileRuntimeError("Speaking ('say') is only allowed inside a creature's action block. Use 'announce' to speak as the narrator.")
             val = self.evaluate(node[1])
             print(val)
 
@@ -201,17 +223,33 @@ class Interpreter:
 
             constructor = None
             methods = {}
+            traits_defs = {}
+            computed_traits = {}
             for member in members:
                 if member[0] in ('WHEN_BORN', 'CONSTRUCTOR'):
                     constructor = member
                 elif member[0] in ('ACTION', 'METHOD'):
                     methods[member[1]] = member[2]
+                elif member[0] == 'TRAITS_BLOCK':
+                    for trait_node in member[1]:
+                        if trait_node[0] == 'TRAIT_DEF':
+                            traits_defs[trait_node[1]] = {
+                                'kind': trait_node[2],
+                                'constraints': trait_node[3]
+                            }
+                        elif trait_node[0] == 'COMPUTED_TRAIT':
+                            computed_traits[trait_node[1]] = trait_node[2]
 
             self.classes[class_name] = {
                 'parent': parent,
                 'constructor': constructor,
-                'methods': methods
+                'methods': methods,
+                'traits': traits_defs,
+                'computed_traits': computed_traits
             }
+
+        elif op == 'WORLD_STRICTNESS':
+            self.strictness = node[1]
 
         # Support both legacy CREATE and new BRING_TO_LIFE
         elif op in ('BRING_TO_LIFE', 'CREATE'):
@@ -225,6 +263,8 @@ class Interpreter:
             if args_node is not None:
                 if isinstance(args_node, list):
                     arg_vals = [self.evaluate(arg) for arg in args_node]
+                elif isinstance(args_node, tuple) and args_node[0] == 'LIST_LITERAL':
+                    arg_vals = [self.evaluate(arg) for arg in args_node[1]]
                 else:
                     arg_vals = [self.evaluate(args_node)]
 
@@ -439,6 +479,70 @@ class Interpreter:
             filename = self.evaluate(node[1])
             self.restore_world(filename)
 
+        elif op == 'SCENE':
+            name = node[1]
+            params = node[2]
+            body = node[3]
+            self.scenes[name] = (params, body)
+
+        elif op == 'PLAY_SCENE':
+            name = node[1]
+            args_exprs = node[2]
+            
+            if name not in self.scenes:
+                raise ForWhileRuntimeError(f"Scene '{name}' is not defined")
+                
+            params, body = self.scenes[name]
+            
+            # Evaluate all argument expressions
+            arg_vals = [self.evaluate(arg) for arg in args_exprs]
+            
+            if len(arg_vals) != len(params):
+                raise ForWhileRuntimeError(f"Scene '{name}' expects {len(params)} arguments, got {len(arg_vals)}")
+                
+            self.scene_depth += 1
+            if self.scene_depth > 20:
+                raise ForWhileRuntimeError("The story is getting too complicated! (scene depth > 20)")
+                
+            # Bind parameters dynamic-scopingly in self.env
+            old_vals = {}
+            for param, val in zip(params, arg_vals):
+                if param in self.env:
+                    old_vals[param] = self.env[param]
+                self.env[param] = val
+                
+            try:
+                for stmt in body:
+                    self.execute(stmt)
+            finally:
+                # Restore old parameters
+                for param in params:
+                    if param in old_vals:
+                        self.env[param] = old_vals[param]
+                    else:
+                        if param in self.env:
+                            del self.env[param]
+                self.scene_depth -= 1
+
+        elif op == 'TICK_LOOP':
+            count = int(self.evaluate(node[1]))
+            body = node[2]
+            for _ in range(count):
+                self.world_clock += 1
+                for stmt in body:
+                    self.execute(stmt)
+                for rule_body in self.tick_rules:
+                    for stmt in rule_body:
+                        self.execute(stmt)
+
+        elif op == 'ON_TICK':
+            self.tick_rules.append(node[1])
+
+        elif op == 'CHARACTER_SAYS':
+            name = node[1]
+            val = self.evaluate(node[2])
+            print(f"[{name}] {val}")
+
         else:
             raise ForWhileRuntimeError(f"Unknown node type: {op}")
 
@@ -451,6 +555,8 @@ class Interpreter:
                 return val
             return expr
         if isinstance(expr, list):
+            if len(expr) == 0:
+                return []
             # Resolve attribute path directly
             return self.resolve_path(expr)
         if isinstance(expr, tuple):
@@ -469,6 +575,12 @@ class Interpreter:
                 obj = expr[1]
                 attr = expr[2]
                 return self.resolve_path([obj, attr])
+            elif op == 'MULTIPLY':
+                left = self.evaluate(expr[1])
+                right = self.evaluate(expr[2])
+                return left * right
+            elif op == 'LIST_LITERAL':
+                return [self.evaluate(item) for item in expr[1]]
             elif op == 'INPUT':
                 return input()
             elif op == 'WORLD_GET':
@@ -524,6 +636,13 @@ class Interpreter:
         # 3. Traverse path attributes & relationships
         for attr in path[prefix_len:]:
             if isinstance(val, dict):
+                if '__class__' in val:
+                    class_name = val['__class__']
+                    computed_expr = self.find_computed_trait(class_name, attr)
+                    if computed_expr is not None:
+                        val = self.evaluate_computed_trait(val, computed_expr)
+                        continue
+
                 if attr in val:
                     val = val[attr]
                 elif '__knows__' in val:
@@ -560,7 +679,7 @@ class Interpreter:
                 return left_val > right_val
             elif comp_op == '<':
                 return left_val < right_val
-            elif comp_op == '==':
+            elif comp_op in ('==', 'is', 'IS'):
                 return left_val == right_val
             elif comp_op == '!=':
                 return left_val != right_val
@@ -656,10 +775,19 @@ class Interpreter:
         if self.current_scope and self.current_scope.exists_local_var(name):
             return self.current_scope.get_local_var(name)
             
-        # 2. Active creature's traits
+        # 2. Active creature's traits & computed traits
         active_creature = self.context_stack[-1]['self'] if self.context_stack else None
-        if active_creature and isinstance(active_creature, dict) and name in active_creature:
-            return active_creature[name]
+        if active_creature and isinstance(active_creature, dict):
+            if '__class__' in active_creature:
+                class_name = active_creature['__class__']
+                computed_expr = self.find_computed_trait(class_name, name)
+                if computed_expr is not None:
+                    return self.evaluate_computed_trait(active_creature, computed_expr)
+                trait_def = self.find_trait_def(class_name, name)
+                if trait_def is not None:
+                    return active_creature.get(name)
+            if name in active_creature:
+                return active_creature[name]
             
         # 3. Global environment (creatures/globals)
         if name in self.env:
@@ -755,6 +883,8 @@ class Interpreter:
                     
         data = {
             'world_memory': self.world_memory,
+            'world_clock': self.world_clock,
+            'strictness': self.strictness,
             'creatures': serialized_creatures,
             'variables': serialized_variables
         }
@@ -774,7 +904,9 @@ class Interpreter:
         # Clear current env and world memory
         self.env.clear()
         self.world_memory = data.get('world_memory', {})
-        
+        self.world_clock = data.get('world_clock', 0)
+        self.strictness = data.get('strictness', 'strict')
+
         # Step 1: Recreate all creature dicts (without resolving references)
         creatures_data = data.get('creatures', {})
         restored_creatures = {}
@@ -814,6 +946,167 @@ class Interpreter:
         for name, val in variables_data.items():
             self.env[name] = from_jsonable(val)
 
+    def evaluate_computed_trait(self, obj_dict, expr):
+        self.context_stack.append({'self': obj_dict})
+        try:
+            return self.evaluate(expr)
+        finally:
+            self.context_stack.pop()
+
+    def find_trait_def(self, class_name, trait_name):
+        cls = self.classes.get(class_name)
+        if not cls:
+            return None
+        traits = cls.get('traits', {})
+        if trait_name in traits:
+            return traits[trait_name]
+        parent = cls.get('parent')
+        if parent:
+            return self.find_trait_def(parent, trait_name)
+        return None
+
+    def find_computed_trait(self, class_name, trait_name):
+        cls = self.classes.get(class_name)
+        if not cls:
+            return None
+        computed = cls.get('computed_traits', {})
+        if trait_name in computed:
+            return computed[trait_name]
+        parent = cls.get('parent')
+        if parent:
+            return self.find_computed_trait(parent, trait_name)
+        return None
+
+    def validate_trait_value(self, obj_val, attr, val):
+        class_name = obj_val['__class__']
+        trait_def = self.find_trait_def(class_name, attr)
+        if not trait_def:
+            return val
+
+        kind = trait_def['kind']
+        constraints = trait_def['constraints']
+
+        if kind == 'word':
+            if not isinstance(val, str):
+                if self.strictness == 'strict':
+                    raise ForWhileRuntimeError(f"{class_name}s can't have a {attr} of {val} — it must be a word.")
+                else:
+                    print(f"[Warning] {class_name}s can't have a {attr} of {val} — it must be a word.")
+        elif kind == 'number':
+            if not isinstance(val, (int, float)) or isinstance(val, bool):
+                if self.strictness == 'strict':
+                    raise ForWhileRuntimeError(f"{class_name}s can't have a {attr} of {val} — it must be a number.")
+                else:
+                    print(f"[Warning] {class_name}s can't have a {attr} of {val} — it must be a number.")
+        elif kind == 'number_range':
+            min_val = self.evaluate(constraints[0])
+            max_val = self.evaluate(constraints[1])
+            if not isinstance(val, (int, float)) or isinstance(val, bool):
+                if self.strictness == 'strict':
+                    raise ForWhileRuntimeError(f"{class_name}s can't have a {attr} of {val} — it must be a number between {min_val} and {max_val}.")
+                else:
+                    print(f"[Warning] {class_name}s can't have a {attr} of {val} — it must be a number between {min_val} and {max_val}.")
+            elif val < min_val or val > max_val:
+                if self.strictness == 'strict':
+                    raise ForWhileRuntimeError(f"{class_name}s can't have a {attr} of {val} — it must be between {min_val} and {max_val}.")
+                else:
+                    print(f"[Warning] {class_name}s can't have a {attr} of {val} — it must be between {min_val} and {max_val}.")
+                    val = max(min_val, min(val, max_val))
+        elif kind == 'enum':
+            allowed = self.evaluate(constraints)
+            if not isinstance(allowed, list):
+                allowed = [allowed]
+            
+            matched = False
+            if isinstance(val, str):
+                for a in allowed:
+                    if isinstance(a, str) and a.lower() == val.lower():
+                        val = a
+                        matched = True
+                        break
+            if not matched:
+                matched = (val in allowed)
+
+            if not matched:
+                val_print = f"'{val}'" if isinstance(val, str) else str(val)
+                plural_attr = attr + 's' if not attr.endswith('s') else attr
+                if self.strictness == 'strict':
+                    raise ForWhileRuntimeError(f"The {attr} {val_print} isn't one of {class_name}'s allowed {plural_attr}.")
+                else:
+                    print(f"[Warning] The {attr} {val_print} isn't one of {class_name}'s allowed {plural_attr}.")
+        elif kind == 'boolean':
+            if not isinstance(val, bool):
+                if self.strictness == 'strict':
+                    raise ForWhileRuntimeError(f"{class_name}s can't have a {attr} of {val} — it must be yes or no.")
+                else:
+                    print(f"[Warning] {class_name}s can't have a {attr} of {val} — it must be yes or no.")
+                    val = bool(val)
+        elif kind == 'list':
+            if not isinstance(val, list):
+                if self.strictness == 'strict':
+                    raise ForWhileRuntimeError(f"{class_name}s can't have a {attr} of {val} — it must be a list.")
+                else:
+                    print(f"[Warning] {class_name}s can't have a {attr} of {val} — it must be a list.")
+                    val = [val]
+
+        return val
+
+def repl():
+    print("ForWhile Interactive REPL")
+    print("Type your code. Press Enter on an empty line at the top level to exit.")
+    interpreter = Interpreter()
+    
+    buffer = []
+    nesting_level = 0
+    open_keywords = {'creature', 'class', 'action', 'method', 'repeat', 'until', 'whenever', 'scene', 'when', 'if', 'on'}
+    
+    while True:
+        try:
+            prompt = "fw> " if nesting_level == 0 else "..  "
+            line = input(prompt)
+            if nesting_level == 0 and line.strip() == "":
+                break
+                
+            buffer.append(line)
+            tokens = line.strip().lower().split()
+            if tokens:
+                first = tokens[0]
+                if first in open_keywords:
+                    if first == 'when':
+                        if len(tokens) > 1 and tokens[1] == 'born':
+                            nesting_level += 1
+                        else:
+                            nesting_level += 1
+                    elif first == 'on':
+                        if len(tokens) > 2 and tokens[1] == 'each' and tokens[2] == 'tick':
+                            nesting_level += 1
+                    else:
+                        nesting_level += 1
+                elif first == 'end':
+                    nesting_level = max(0, nesting_level - 1)
+                    
+            if nesting_level == 0:
+                code = "\n".join(buffer)
+                buffer.clear()
+                if code.strip():
+                    try:
+                        ast = parser.parse(code)
+                        if ast is not None:
+                            interpreter.run(ast)
+                        else:
+                            print("[Error] Failed to parse input.")
+                    except ForWhileError as e:
+                        print(str(e))
+                    except Exception as e:
+                        print(f"[Runtime Error] {e}")
+        except KeyboardInterrupt:
+            print("\nKeyboardInterrupt")
+            buffer.clear()
+            nesting_level = 0
+        except EOFError:
+            print()
+            break
+
 def run_file(path):
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -834,9 +1127,9 @@ def run_file(path):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: forwhile <filename.fw>")
-        sys.exit(1)
-    run_file(sys.argv[1])
+        repl()
+    else:
+        run_file(sys.argv[1])
 
 if __name__ == "__main__":
     main()

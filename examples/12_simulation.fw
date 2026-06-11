@@ -1,0 +1,55 @@
+# ForWhile Day/Night Cycle Simulation
+# Secretly teaches: the game loop, state-dependent behavior, simulation.
+
+the world remembers is_day as 1
+the world remembers days_passed as 0
+
+creature Wolf
+  when born with (name)
+    give self the trait name to name
+  end born
+  
+  action act
+    when the world knows is_day == 1
+      say self name + " is sleeping in the cave."
+    otherwise
+      say self name + " is howling at the moon!"
+    end when
+  end action
+end creature
+
+creature Villager
+  when born with (name)
+    give self the trait name to name
+  end born
+  
+  action act
+    when the world knows is_day == 1
+      say self name + " is farming in the fields."
+    otherwise
+      say self name + " is sleeping soundly."
+    end when
+  end action
+end creature
+
+bring Lycan to life as Wolf with ("Lycan")
+bring bob to life as Villager with ("Bob")
+
+on each tick
+  # Toggle day and night
+  when the world knows is_day == 1
+    the world remembers is_day as 0
+    announce "Night falls over the land."
+  otherwise
+    the world remembers is_day as 1
+    the world remembers days_passed as the world knows days_passed + 1
+    announce "A new day dawns. Day " + the world knows days_passed
+  end when
+end tick
+
+# Run the simulation for 10 ticks (5 full day/night cycles)
+the world ticks 10 times
+  # Every tick, creatures behave according to the time of day
+  Lycan does act
+  bob does act
+end ticks

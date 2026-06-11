@@ -13,3 +13,6 @@ forwhile.egg-info/entry_points.txt
 forwhile.egg-info/requires.txt
 forwhile.egg-info/top_level.txt
 tests/test_basic.py
+tests/test_narrative.py
+tests/test_traits.py
+tests/test_world_memory.py

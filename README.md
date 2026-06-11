@@ -36,6 +36,19 @@ Every feature in ForWhile is designed to serve a world-building and simulation p
 | **World Roster** | `[e for e in env if type(e) == Dragon]` | `the world's Dragon creatures` |
 | **World Counters** | `len(roster(Dragon))` | `the world counts Dragon` |
 | **World Persistence** | `json.dump(...)` / `json.load(...)` | `save the world to "save.fw"` / `restore the world from "save.fw"` |
+| **Scene Definition** | `def forest_awakens():` | `scene forest awakens` |
+| **Scene Playback** | `forest_awakens()` | `play scene forest awakens` |
+| **Scene with Params** | `def greet(name):` | `scene greet with (name)` |
+| **Play with Params** | `greet("Bob")` | `play scene greet with ("Bob")` |
+| **Time Tick Loop** | `for _ in range(10):` | `the world ticks 10 times` |
+| **Time Tick Hook** | `event_loop.on_tick(...)` | `on each tick` |
+| **Character Speech** | `print(f"[Alice] {msg}")` | `Alice says "Hello"` |
+| **Trait Declarations** | `class D: name: str` | `traits \n name is a word \n end traits` |
+| **Range Validation** | `assert 0 <= h <= 100` | `health is a number between 0 and 100` |
+| **Enum Validation** | `assert c in ['red', 'blue']` | `color is one of ("red" "blue")` |
+| **Boolean State** | `alive = True` | `alive is true or false` (uses `yes`/`no` values) |
+| **Computed Trait** | `@property\n def area(self):` | `area is width times height` |
+| **World Strictness** | `strict_mode = True` | `the world is strict` / `the world is lenient` |
 
 ## Scoping Rules
 
@@ -53,15 +66,23 @@ forwhile/
 │   ├── __init__.py       (Exposes runner)
 │   ├── lexer.py          (Lexer logic using PLY)
 │   ├── parser.py         (Parser logic using PLY)
-│   ├── interpreter.py    (CLI / Tree-walk interpreter)
+│   ├── interpreter.py    (CLI / Tree-walk interpreter / REPL)
 │   └── errors.py         (Graceful custom exceptions)
 ├── tests/
 │   ├── test_basic.py     (Basic pytest test suite)
-│   └── test_world_memory.py (World memory pytest suite)
+│   ├── test_world_memory.py (World memory pytest suite)
+│   ├── test_narrative.py (Narrative system test suite)
+│   └── test_traits.py    (Trait constraints and validations test suite)
 ├── examples/
 │   ├── 01_hello.fw       (World-building hello world)
 │   ├── 09_world_memory.fw (Kingdom simulation sample)
-│   └── 10_roster.fw      (Creature list and counter sample)
+│   ├── 10_roster.fw      (Creature list and counter sample)
+│   ├── 11_story_structure.fw (Narrator and scene composition)
+│   ├── 12_simulation.fw  (Day/night tick cycle simulation)
+│   ├── 13_trait_kinds.fw (Trait kinds, clamping, and strictness sample)
+│   └── 14_booleans.fw    (Light switch boolean state simulation)
+├── docs/
+│   └── LANGUAGE_SPEC.md  (Philosophical Story Model specification)
 ├── setup.py              (CLI configuration)
 ├── README.md             (Documentation)
 └── requirements.txt      (Requirements list)
@@ -80,5 +101,11 @@ pip install -e .
 Run any ForWhile program using the CLI:
 
 ```bash
-forwhile examples/09_world_memory.fw
+forwhile examples/11_story_structure.fw
+```
+
+Or run without arguments to start the interactive REPL:
+
+```bash
+forwhile
 ```

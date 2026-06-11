@@ -1,0 +1,41 @@
+# Demonstration of Booleans as first-class world concepts in ForWhile
+# This example simulates a LightSwitch creature with an 'on' boolean trait.
+# It showcases the toggle pattern and a whenever event rule reactively announcing changes.
+
+creature LightSwitch
+  traits
+    room is a word
+    on is true or false
+  end traits
+
+  when born with (room)
+    give self the trait room to room
+    give self the trait on to no
+  end born
+
+  action toggle
+    when on is yes
+      give on to no
+    otherwise
+      give on to yes
+    end when
+  end action
+end creature
+
+# Set up event handling to announce when the light is toggled
+whenever switch gets trait on changed
+  when switch on is yes
+    announce switch room + " light is now TURNED ON!"
+  otherwise
+    announce switch room + " light is now turned off."
+  end when
+end whenever
+
+# Bring the switch to life
+bring switch to life as LightSwitch with ("Living Room")
+
+announce "--- Toggling the switch first time ---"
+switch does toggle
+
+announce "--- Toggling the switch second time ---"
+switch does toggle
