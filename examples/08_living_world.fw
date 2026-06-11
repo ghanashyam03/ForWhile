@@ -1,0 +1,39 @@
+creature ForestCreature
+  when born with (name start_location)
+    give self the trait name to name
+    give self the trait location to start_location
+    give self the trait destination to start_location
+  end born
+
+  action move
+    give self the trait location to self destination
+    say self name + " moves to the " + self location + "."
+  end action
+end creature
+
+bring Robin to life as ForestCreature with ("Robin" "Treehouse")
+bring Squirrel to life as ForestCreature with ("Squirrel" "Meadow")
+bring Badger to life as ForestCreature with ("Badger" "Oak Tree")
+
+# Reactive world rule that checks creature locations when anyone moves
+whenever anyone does move
+  when Robin location == Squirrel location
+    say Robin name + " and " + Squirrel name + " greet each other at the " + Robin location + "!"
+  end when
+
+  when Robin location == Badger location
+    say Robin name + " and " + Badger name + " greet each other at the " + Robin location + "!"
+  end when
+
+  when Squirrel location == Badger location
+    say Squirrel name + " and " + Badger name + " greet each other at the " + Squirrel location + "!"
+  end when
+end whenever
+
+# Robin moves to Oak Tree (where Badger is)
+give Robin the trait destination to "Oak Tree"
+Robin does move
+
+# Squirrel moves to Oak Tree (where both Robin and Badger are now)
+give Squirrel the trait destination to "Oak Tree"
+Squirrel does move

@@ -1,0 +1,39 @@
+creature Fire
+  when born
+    give self the trait brightness to 50
+  end born
+end creature
+
+creature Villager
+  when born with (name)
+    give self the trait name to name
+  end born
+
+  action poke fire
+    say self name + " pokes the fire."
+  end action
+end creature
+
+bring campfire to life as Fire
+bring bob to life as Villager with ("Bob")
+
+# Event rule reacting to character action
+whenever bob does poke fire
+  give campfire the trait brightness to campfire brightness + 30
+end whenever
+
+# Event rule reacting to trait changes
+whenever campfire gets trait brightness changed
+  say "The fire crackles! Current brightness is: " + campfire brightness
+  when campfire brightness > 100
+    announce "The fire is too big!"
+    give campfire the trait brightness to 50
+    announce "The fire has been dimmed back to safety."
+  end when
+end whenever
+
+# First poke: brightness becomes 80
+bob does poke fire
+
+# Second poke: brightness becomes 110 (triggers warning and resets to 50)
+bob does poke fire

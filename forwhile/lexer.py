@@ -2,12 +2,18 @@ import ply.lex as lex
 
 tokens = (
     # New world-building tokens
-    'CREATURE', 'BRING', 'LIFE', 'AS', 'GIVE', 'THE', 'TRAIT', 'DOES', 'ACTION',
+    'CREATURE', 'BRING', 'LIFE', 'AS', 'GIVE', 'TRAIT', 'DOES', 'ACTION',
     'WHEN', 'OTHERWISE', 'UNTIL', 'BORN',
     
     # Relationship and collection tokens
     'KNOWS', 'ANYONE', 'THROUGH', 'FORGETS',
     
+    # Event system tokens
+    'WHENEVER', 'GETS', 'CHANGED', 'REMOVE', 'WORLD', 'ANNOUNCE',
+
+    # World Memory tokens
+    'THE_WORLD', 'THE_WORLDS', 'REMEMBERS', 'COUNTS', 'CREATURES', 'SAVE', 'RESTORE',
+
     # Deprecated/Legacy tokens (kept for backward compatibility)
     'CLASS', 'END', 'CREATE', 'WITH', 'METHOD', 'FROM', 'SET', 'TO', 'SAY', 'ATTACH',
     'REPEAT', 'TIMES', 'IF', 'ELSE', 'ASK', 'CALL',
@@ -29,6 +35,14 @@ t_NEQ = r'!='
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 
+def t_THE_WORLDS(t):
+    r"[tT][hH][eE]\s+[wW][oO][rR][lL][dD]'[sS]"
+    return t
+
+def t_THE_WORLD(t):
+    r"[tT][hH][eE]\s+[wW][oO][rR][lL][dD]"
+    return t
+
 def t_IDENTIFIER(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
     val_lower = t.value.lower()
@@ -40,7 +54,6 @@ def t_IDENTIFIER(t):
         'life': 'LIFE',
         'as': 'AS',
         'give': 'GIVE',
-        'the': 'THE',
         'trait': 'TRAIT',
         'does': 'DOES',
         'action': 'ACTION',
@@ -55,6 +68,21 @@ def t_IDENTIFIER(t):
         'through': 'THROUGH',
         'forgets': 'FORGETS',
         'forget': 'FORGETS',
+        
+        # Event system syntax
+        'whenever': 'WHENEVER',
+        'gets': 'GETS',
+        'changed': 'CHANGED',
+        'remove': 'REMOVE',
+        'world': 'WORLD',
+        'announce': 'ANNOUNCE',
+
+        # World Memory keywords
+        'remembers': 'REMEMBERS',
+        'counts': 'COUNTS',
+        'creatures': 'CREATURES',
+        'save': 'SAVE',
+        'restore': 'RESTORE',
         
         # Old/Deprecated syntax (aliases)
         'class': 'CLASS',

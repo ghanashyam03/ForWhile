@@ -50,7 +50,14 @@ def p_statement(p):
                  | say_statement
                  | call_statement
                  | knows_statement
-                 | forgets_statement'''
+                 | forgets_statement
+                 | whenever_statement
+                 | remove_statement
+                 | announce_statement
+                 | world_remembers
+                 | world_forgets
+                 | save_world
+                 | restore_world'''
     p[0] = p[1]
 
 def p_class_definition(p):
@@ -136,13 +143,17 @@ def p_create_statement(p):
 
 def p_set_statement(p):
     '''set_statement : SET attribute_path TO expression
-                     | GIVE attribute_path THE TRAIT IDENTIFIER TO expression'''
+                     | GIVE attribute_path IDENTIFIER TRAIT IDENTIFIER TO expression
+                     | GIVE attribute_path TRAIT IDENTIFIER TO expression'''
     if p[1] == 'set':
         obj_path = p[2][:-1]
         attr_name = p[2][-1]
         p[0] = ('GIVE_TRAIT', obj_path, attr_name, p[4])
     else:
-        p[0] = ('GIVE_TRAIT', p[2], p[5], p[7])
+        if len(p) == 8:
+            p[0] = ('GIVE_TRAIT', p[2], p[5], p[7])
+        else:
+            p[0] = ('GIVE_TRAIT', p[2], p[4], p[6])
 
 def p_attach_statement(p):
     '''attach_statement : ATTACH expression TO expression'''
@@ -200,6 +211,55 @@ def p_forgets_statement(p):
     '''forgets_statement : expression FORGETS IDENTIFIER'''
     p[0] = ('FORGETS', p[1], p[3])
 
+def p_whenever_statement(p):
+    '''whenever_statement : WHENEVER subject DOES action_name opt_separator statements opt_separator END WHENEVER
+                          | WHENEVER subject GETS TRAIT IDENTIFIER CHANGED opt_separator statements opt_separator END WHENEVER
+                          | WHENEVER subject IDENTIFIER BORN opt_separator statements opt_separator END WHENEVER
+                          | WHENEVER subject IDENTIFIER opt_separator statements opt_separator END WHENEVER'''
+    if len(p) == 10:
+        if p[3] == 'does':
+            # WHENEVER subject DOES action_name ...
+            p[0] = ('WHENEVER', 'DOES_ACTION', p[2], p[4], p[6])
+        else:
+            # WHENEVER subject IDENTIFIER BORN ...
+            action = p[3] + " " + p[4]
+            p[0] = ('WHENEVER', 'DOES_ACTION', p[2], action, p[6])
+    elif len(p) == 12:
+        # WHENEVER subject GETS TRAIT IDENTIFIER CHANGED ...
+        p[0] = ('WHENEVER', 'TRAIT_CHANGED', p[2], p[5], p[8])
+    elif len(p) == 9:
+        # WHENEVER subject IDENTIFIER ... (e.g. dies)
+        p[0] = ('WHENEVER', 'DOES_ACTION', p[2], p[3], p[5])
+
+def p_subject(p):
+    '''subject : IDENTIFIER
+               | ANYONE'''
+    p[0] = p[1]
+
+def p_remove_statement(p):
+    '''remove_statement : REMOVE IDENTIFIER FROM WORLD'''
+    p[0] = ('REMOVE', p[2])
+
+def p_announce_statement(p):
+    '''announce_statement : ANNOUNCE expression'''
+    p[0] = ('ANNOUNCE', p[2])
+
+def p_world_remembers(p):
+    '''world_remembers : THE_WORLD REMEMBERS fact_name AS expression'''
+    p[0] = ('WORLD_SET', p[3], p[5])
+
+def p_world_forgets(p):
+    '''world_forgets : THE_WORLD FORGETS fact_name'''
+    p[0] = ('WORLD_FORGET', p[3])
+
+def p_save_world(p):
+    '''save_world : SAVE THE_WORLD TO expression'''
+    p[0] = ('SAVE_WORLD', p[4])
+
+def p_restore_world(p):
+    '''restore_world : RESTORE THE_WORLD FROM expression'''
+    p[0] = ('RESTORE_WORLD', p[4])
+
 def p_condition(p):
     '''condition : expression comparison_op expression
                  | expression KNOWS expression
@@ -236,7 +296,8 @@ def p_expression(p):
                   | attribute_path
                   | expression PLUS expression
                   | expression MINUS expression
-                  | LPAREN expression_list RPAREN'''
+                  | LPAREN expression_list RPAREN
+                  | world_expr'''
     if len(p) == 2:
         p[0] = p[1]
     elif len(p) == 3:
@@ -254,6 +315,28 @@ def p_expression(p):
             p[0] = ('ADD', p[1], p[3])
         else:
             p[0] = ('MINUS', p[1], p[3])
+
+def p_world_expr(p):
+    '''world_expr : THE_WORLD KNOWS fact_name
+                  | THE_WORLDS IDENTIFIER CREATURES
+                  | THE_WORLD COUNTS IDENTIFIER'''
+    p2_lower = p[2].lower() if isinstance(p[2], str) else ""
+    p3_lower = p[3].lower() if (len(p) > 3 and isinstance(p[3], str)) else ""
+    
+    if p2_lower == 'knows':
+        p[0] = ('WORLD_GET', p[3])
+    elif p3_lower == 'creatures':
+        p[0] = ('WORLD_ROSTER', p[2])
+    else:
+        p[0] = ('WORLD_COUNTS', p[3])
+
+def p_fact_name(p):
+    '''fact_name : IDENTIFIER
+                 | fact_name IDENTIFIER'''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[1] + " " + p[2]
 
 def p_error(p):
     if p:
