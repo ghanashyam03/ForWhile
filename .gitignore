@@ -30,3 +30,9 @@ MANIFEST
 # PLY generated files
 parsetab.py
 parser.out
+
+# Coverage report
+.coverage
+
+# VS Code extension packaging
+*.vsix
