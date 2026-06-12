@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "forwhile"
-version = "1.0.0"
+version = "1.0.1"
 description = "A world-building language for young storytellers"
 readme = "README.md"
 authors = [

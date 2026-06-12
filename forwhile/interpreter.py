@@ -1175,7 +1175,7 @@ def main():
         
     cmd = sys.argv[1].lower()
     if cmd == '--version':
-        print("ForWhile version 1.0.0")
+        print("ForWhile version 1.0.1")
         sys.exit(0)
     elif cmd == 'start':
         repl()
