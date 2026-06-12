@@ -1,0 +1,60 @@
+creature TrafficLight
+  traits
+    color is text
+  end traits
+
+  when born
+    give self the trait color to "Red"
+  end born
+
+  action change
+    when self color == "Red"
+      give self the trait color to "Green"
+      say "The light turns Green."
+    otherwise
+      when self color == "Green"
+        give self the trait color to "Yellow"
+        say "The light turns Yellow."
+      otherwise
+        when self color == "Yellow"
+          give self the trait color to "Red"
+          say "The light turns Red."
+        end when
+      end when
+    end when
+  end action
+end creature
+
+creature Car
+  traits
+    name is text
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+  end born
+
+  action drive
+    when self knows anyone as light
+      give tl to self light
+      when tl color == "Green"
+        say self name + " drives through the intersection."
+      otherwise
+        say self name + " stops at the " + tl color + " light."
+      end when
+    end when
+  end action
+end creature
+
+bring MainLight to life as TrafficLight
+bring Sedan to life as Car with ("Sedan")
+
+Sedan knows MainLight as light
+
+Sedan does drive
+MainLight does change
+Sedan does drive
+MainLight does change
+Sedan does drive
+MainLight does change
+Sedan does drive

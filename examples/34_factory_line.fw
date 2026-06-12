@@ -1,0 +1,49 @@
+creature Factory
+  traits
+    widgets_assembled is a number
+    parts_available is a number
+  end traits
+
+  when born
+    give self the trait widgets_assembled to 0
+    give self the trait parts_available to 10
+  end born
+end creature
+
+creature WorkerRobot
+  traits
+    id is text
+  end traits
+
+  when born with (id)
+    give self the trait id to id
+  end born
+
+  action assemble
+    when self knows anyone as workplace
+      give factory to self workplace
+      when factory parts_available > 1
+        give factory the trait parts_available to factory parts_available - 2
+        give factory the trait widgets_assembled to factory widgets_assembled + 1
+        say "Robot " + self id + " assembled a widget. Total widgets: " + factory widgets_assembled
+      otherwise
+        say "Robot " + self id + " says: Not enough parts to assemble a widget!"
+      end when
+    end when
+  end action
+end creature
+
+bring MegaFactory to life as Factory
+
+bring Rob1 to life as WorkerRobot with ("R-01")
+bring Rob2 to life as WorkerRobot with ("R-02")
+
+Rob1 knows MegaFactory as workplace
+Rob2 knows MegaFactory as workplace
+
+Rob1 does assemble
+Rob2 does assemble
+Rob1 does assemble
+Rob2 does assemble
+Rob1 does assemble
+Rob2 does assemble

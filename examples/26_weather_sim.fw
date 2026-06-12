@@ -1,0 +1,51 @@
+creature WeatherSystem
+  traits
+    condition is text
+  end traits
+
+  when born
+    give self the trait condition to "Sunny"
+  end born
+
+  action rain
+    give self the trait condition to "Rainy"
+    say "The sky darkens. It starts to rain."
+  end action
+
+  action clear_up
+    give self the trait condition to "Sunny"
+    say "The clouds part. It is sunny again."
+  end action
+end creature
+
+creature Citizen
+  traits
+    name is text
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+  end born
+
+  action go_outside
+    when self knows anyone as weather
+      give w to self weather
+      when w condition == "Sunny"
+        say self name + " goes outside with sunglasses."
+      otherwise
+        say self name + " grabs an umbrella and goes outside."
+      end when
+    end when
+  end action
+end creature
+
+bring Sky to life as WeatherSystem
+bring Bob to life as Citizen with ("Bob")
+
+Bob knows Sky as weather
+
+Bob does go_outside
+Sky does rain
+Bob does go_outside
+Sky does clear_up
+Bob does go_outside

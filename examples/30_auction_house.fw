@@ -1,0 +1,48 @@
+creature Auction
+  traits
+    item is text
+    current_bid is a number
+    highest_bidder is text
+  end traits
+
+  when born with (item)
+    give self the trait item to item
+    give self the trait current_bid to 10
+    give self the trait highest_bidder to "None"
+    say "Auction started for " + item + " with starting bid " + self current_bid
+  end born
+end creature
+
+creature Bidder
+  traits
+    name is text
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+  end born
+
+  action place_bid
+    when self knows anyone as auction_house
+      give ah to self auction_house
+      give new_bid to ah current_bid + 5
+      give ah the trait current_bid to new_bid
+      give ah the trait highest_bidder to self name
+      say self name + " bids " + new_bid + " for " + ah item
+    end when
+  end action
+end creature
+
+bring VaseAuction to life as Auction with ("Antique Vase")
+bring Alice to life as Bidder with ("Alice")
+bring Bob to life as Bidder with ("Bob")
+
+Alice knows VaseAuction as auction_house
+Bob knows VaseAuction as auction_house
+
+Alice does place_bid
+Bob does place_bid
+Alice does place_bid
+Bob does place_bid
+
+announce "The winner is " + VaseAuction highest_bidder + " with a bid of " + VaseAuction current_bid

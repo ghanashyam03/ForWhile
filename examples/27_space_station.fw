@@ -1,0 +1,44 @@
+creature SpaceStation
+  traits
+    oxygen_level is a number
+    power_level is a number
+  end traits
+
+  when born
+    give self the trait oxygen_level to 100
+    give self the trait power_level to 100
+  end born
+
+  action consume_resources
+    give self the trait oxygen_level to self oxygen_level - 10
+    give self the trait power_level to self power_level - 15
+    say "Resources consumed. Oxygen: " + self oxygen_level + "%, Power: " + self power_level + "%"
+    
+    when self oxygen_level < 20
+      say "WARNING: Oxygen levels critically low!"
+    end when
+    
+    when self power_level < 20
+      say "WARNING: Power levels critically low!"
+    end when
+  end action
+
+  action run_generator
+    give self the trait power_level to self power_level + 30
+    say "Generator ran. Power increased to " + self power_level + "%"
+  end action
+
+  action run_scrubber
+    give self the trait oxygen_level to self oxygen_level + 20
+    say "Oxygen scrubber ran. Oxygen increased to " + self oxygen_level + "%"
+  end action
+end creature
+
+bring ISS to life as SpaceStation
+
+ISS does consume_resources
+ISS does consume_resources
+ISS does consume_resources
+ISS does run_generator
+ISS does run_scrubber
+ISS does consume_resources

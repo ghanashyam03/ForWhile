@@ -1,0 +1,38 @@
+creature Inventory
+  traits
+    capacity is a number
+    items_held is a number
+  end traits
+
+  when born
+    give self the trait capacity to 3
+    give self the trait items_held to 0
+  end born
+
+  action add_item
+    when self items_held < self capacity
+      give self the trait items_held to self items_held + 1
+      say "Item added to inventory. Space used: " + self items_held + "/" + self capacity
+    otherwise
+      say "Inventory full! Cannot carry more items."
+    end when
+  end action
+
+  action drop_item
+    when self items_held > 0
+      give self the trait items_held to self items_held - 1
+      say "Item dropped. Space used: " + self items_held + "/" + self capacity
+    otherwise
+      say "Inventory is already empty!"
+    end when
+  end action
+end creature
+
+bring Backpack to life as Inventory
+
+Backpack does add_item
+Backpack does add_item
+Backpack does add_item
+Backpack does add_item
+Backpack does drop_item
+Backpack does add_item

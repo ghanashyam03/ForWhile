@@ -1,0 +1,60 @@
+creature Hero
+  traits
+    name is text
+    hp is a number
+    attack_power is a number
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+    give self the trait hp to 50
+    give self the trait attack_power to 15
+  end born
+
+  action attack
+    when self knows anyone as enemy
+      give target to self enemy
+      give damage to self attack_power
+      say self name + " attacks " + target name + " for " + damage + " damage!"
+      give target the trait hp to target hp - damage
+    end when
+  end action
+end creature
+
+creature Goblin
+  traits
+    name is text
+    hp is a number
+    attack_power is a number
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+    give self the trait hp to 30
+    give self the trait attack_power to 5
+  end born
+
+  action attack
+    when self knows anyone as enemy
+      give target to self enemy
+      give damage to self attack_power
+      say self name + " fiercely bites " + target name + " for " + damage + " damage!"
+      give target the trait hp to target hp - damage
+    end when
+  end action
+end creature
+
+bring Arthur to life as Hero with ("Arthur")
+bring Grunt to life as Goblin with ("Grunt")
+
+Arthur knows Grunt as enemy
+Grunt knows Arthur as enemy
+
+Arthur does attack
+announce "Goblin HP is now: " + Grunt hp
+
+Grunt does attack
+announce "Hero HP is now: " + Arthur hp
+
+Arthur does attack
+announce "Goblin HP is now: " + Grunt hp

@@ -1,0 +1,45 @@
+creature Wizard
+  traits
+    name is text
+    mana is a number
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+    give self the trait mana to 100
+  end born
+
+  action cast_fireball
+    when self mana > 19
+      give self the trait mana to self mana - 20
+      say self name + " casts Fireball! Whoosh! Mana left: " + self mana
+    otherwise
+      say self name + " does not have enough mana for Fireball!"
+    end when
+  end action
+
+  action cast_heal
+    when self mana > 9
+      give self the trait mana to self mana - 10
+      say self name + " casts Heal! A warm light shines. Mana left: " + self mana
+    otherwise
+      say self name + " does not have enough mana for Heal!"
+    end when
+  end action
+
+  action drink_potion
+    give self the trait mana to self mana + 50
+    say self name + " drinks a mana potion. Gulp gulp. Mana is now " + self mana
+  end action
+end creature
+
+bring Gandalf to life as Wizard with ("Gandalf")
+
+Gandalf does cast_fireball
+Gandalf does cast_fireball
+Gandalf does cast_fireball
+Gandalf does cast_fireball
+Gandalf does cast_fireball
+Gandalf does cast_fireball
+Gandalf does drink_potion
+Gandalf does cast_heal

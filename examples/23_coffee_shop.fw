@@ -1,0 +1,48 @@
+creature CoffeeShop
+  traits
+    beans is a number
+    milk is a number
+    coffees_made is a number
+  end traits
+
+  when born
+    give self the trait beans to 10
+    give self the trait milk to 5
+    give self the trait coffees_made to 0
+  end born
+
+  action brew_espresso
+    when self beans > 0
+      give self the trait beans to self beans - 1
+      give self the trait coffees_made to self coffees_made + 1
+      say "Brewed an Espresso. Beans left: " + self beans
+    otherwise
+      say "Cannot brew Espresso: Out of beans!"
+    end when
+  end action
+
+  action brew_latte
+    when self beans > 0
+      when self milk > 0
+        give self the trait beans to self beans - 1
+        give self the trait milk to self milk - 1
+        give self the trait coffees_made to self coffees_made + 1
+        say "Brewed a Latte. Beans left: " + self beans + ", Milk left: " + self milk
+      otherwise
+        say "Cannot brew Latte: Out of milk!"
+      end when
+    otherwise
+      say "Cannot brew Latte: Out of beans!"
+    end when
+  end action
+end creature
+
+bring CentralPerk to life as CoffeeShop
+
+CentralPerk does brew_latte
+CentralPerk does brew_espresso
+CentralPerk does brew_latte
+CentralPerk does brew_latte
+CentralPerk does brew_latte
+CentralPerk does brew_latte
+CentralPerk does brew_latte

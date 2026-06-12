@@ -1,0 +1,38 @@
+creature VendingMachine
+  traits
+    cola_stock is a number
+    chips_stock is a number
+    coins is a number
+  end traits
+
+  when born
+    give self the trait cola_stock to 5
+    give self the trait chips_stock to 5
+    give self the trait coins to 0
+  end born
+
+  action insert_coin
+    give self the trait coins to self coins + 1
+    say "Coin inserted. Total coins: " + self coins
+  end action
+
+  action buy_cola
+    when self coins > 1
+      when self cola_stock > 0
+        give self the trait coins to self coins - 2
+        give self the trait cola_stock to self cola_stock - 1
+        say "Vending Machine dispenses a Cola! Remaining stock: " + self cola_stock
+      otherwise
+        say "Out of Cola!"
+      end when
+    otherwise
+      say "Not enough coins for Cola! Need 2 coins."
+    end when
+  end action
+end creature
+
+bring Machine to life as VendingMachine
+Machine does insert_coin
+Machine does buy_cola
+Machine does insert_coin
+Machine does buy_cola

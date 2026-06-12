@@ -1,0 +1,49 @@
+creature PizzaOven
+  traits
+    temperature is a number
+    is_on is true or false
+  end traits
+
+  when born
+    give self the trait temperature to 0
+    give self the trait is_on to false
+  end born
+
+  action turn_on
+    give self the trait is_on to true
+    give self the trait temperature to 400
+    say "Pizza oven is ON and heated to " + self temperature + " degrees."
+  end action
+end creature
+
+creature Chef
+  traits
+    name is text
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+  end born
+
+  action bake_pizza
+    when self knows anyone as oven
+      give my_oven to self oven
+      when my_oven is_on == true
+        say self name + " places the pizza in the oven."
+        say "Pizza is baking..."
+        say "Ding! Pizza is ready!" 
+      otherwise
+        say self name + " cannot bake. The oven is off!"
+      end when
+    end when
+  end action
+end creature
+
+bring WoodFire to life as PizzaOven
+bring Luigi to life as Chef with ("Luigi")
+
+Luigi knows WoodFire as oven
+
+Luigi does bake_pizza
+WoodFire does turn_on
+Luigi does bake_pizza

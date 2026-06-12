@@ -1,0 +1,41 @@
+creature Musician
+  traits
+    name is text
+    instrument is text
+  end traits
+
+  when born with (name instrument)
+    give self the trait name to name
+    give self the trait instrument to instrument
+  end born
+
+  action play
+    say self name + " plays a cool riff on the " + self instrument
+  end action
+end creature
+
+creature Band
+  traits
+    name is text
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+  end born
+end creature
+
+bring RockBand to life as Band with ("The Variables")
+
+bring Alice to life as Musician with ("Alice" "Guitar")
+bring Bob to life as Musician with ("Bob" "Drums")
+bring Charlie to life as Musician with ("Charlie" "Bass")
+
+RockBand knows Alice as member
+RockBand knows Bob as member
+RockBand knows Charlie as member
+
+announce "Introducing " + RockBand name + "!"
+
+repeat through RockBand members as each player
+  player does play
+end repeat
