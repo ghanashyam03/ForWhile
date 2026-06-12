@@ -15,7 +15,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Topic :: Education",
-    "Topic :: Software Development :: Interpreter",
+    "Topic :: Software Development :: Interpreters",
 ]
 keywords = ["education", "kids", "storytelling", "simulation", "programming language", "world-building"]
 dependencies = [
