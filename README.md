@@ -1,19 +1,6 @@
 # ForWhile
 
-[![ForWhile CI](https://github.com/ghanashyam03/ForWhile/actions/workflows/ci.yml/badge.svg)](https://github.com/ghanashyam03/ForWhile/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PyPI version](https://badge.fury.io/py/forwhile.svg)](https://pypi.org/project/forwhile/)
-
 A world-building programming language designed to teach Object-Oriented Programming (OOP) and core simulation concepts to young storytellers through a plain-English, narrative-driven syntax.
-
----
-
-## 📖 Comprehensive Documentation
-
-For every single detail about the language, please refer to our dedicated documentation files:
-
-* **Language Specification**: [docs/LANGUAGE_SPEC.md](docs/LANGUAGE_SPEC.md) — The ultimate reference for grammar, design decisions, complete syntax rules, and language capabilities.
-* **Educator's Guide**: [docs/EDUCATORS_GUIDE.md](docs/EDUCATORS_GUIDE.md) — CS concept mapping, teaching strategies, and 10 ready-to-use classroom exercises.
 
 ---
 
@@ -45,6 +32,16 @@ Here is how ForWhile maps common programming paradigms to storytelling:
 | **Plural References** | `[x for x in env if type(x) == Dragon]` | `the world's Dragon creatures` |
 | **Event Callback** | `observer.on('die', callback)` | `whenever anyone dies` |
 | **Time-Step Loop** | `for _ in range(10):` | `the world ticks 10 times` |
+
+
+---
+
+## 📖 Comprehensive Documentation
+
+For every single detail about the language, please refer to our dedicated documentation files:
+
+* **Language Specification**: [docs/LANGUAGE_SPEC.md](docs/LANGUAGE_SPEC.md) — The ultimate reference for grammar, design decisions, complete syntax rules, and language capabilities.
+* **Educator's Guide**: [docs/EDUCATORS_GUIDE.md](docs/EDUCATORS_GUIDE.md) — CS concept mapping, teaching strategies, and 10 ready-to-use classroom exercises.
 
 ---
 
@@ -102,13 +99,6 @@ For the best coding experience, we provide a **Visual Studio Code extension** wi
 3. Search for **ForWhile** in the Marketplace.
 4. Click **Install**.
 
-*Alternatively, if you are building the project from source, you can package and install the extension manually:*
-```bash
-cd editors/vscode
-npm install -g @vscode/vsce
-vsce package
-code --install-extension forwhile-0.0.1.vsix
-```
 
 ---
 
@@ -157,21 +147,3 @@ ForWhile/
 ```
 
 ---
-
-## 🧪 Development & Testing
-
-We maintain a strict code coverage requirement of $\ge 90\%$ on `forwhile/interpreter.py`.
-
-Install test dependencies and run the tests:
-```bash
-# Clone the repository
-git clone https://github.com/ghanashyam03/ForWhile.git
-cd ForWhile
-
-# Install editable mode + testing tools
-pip install -e .
-pip install pytest pytest-cov
-
-# Run tests
-pytest --cov=forwhile --cov-report=term-missing
-```
