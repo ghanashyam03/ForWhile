@@ -24,7 +24,7 @@ end whenever
 
 # Event rule reacting to trait changes
 whenever campfire gets trait brightness changed
-  say "The fire crackles! Current brightness is: " + campfire brightness
+  announce "The fire crackles! Current brightness is: " + campfire brightness
   when campfire brightness > 100
     announce "The fire is too big!"
     give campfire the trait brightness to 50

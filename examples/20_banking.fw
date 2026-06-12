@@ -1,0 +1,37 @@
+creature BankAccount
+  traits
+    owner is text
+    balance is a number
+  end traits
+
+  when born with (owner)
+    give self the trait owner to owner
+    give self the trait balance to 100
+    say "Account opened for " + owner + " with balance " + self balance
+  end born
+
+  action deposit
+    # Simulating depositing a fixed amount of 50
+    give self the trait balance to self balance + 50
+    say self owner + " deposited 50. New balance: " + self balance
+  end action
+
+  action withdraw
+    # Simulating withdrawing 30
+    when self balance > 29
+      give self the trait balance to self balance - 30
+      say self owner + " withdrew 30. New balance: " + self balance
+    otherwise
+      say self owner + " tried to withdraw 30, but has insufficient funds!"
+    end when
+  end action
+end creature
+
+bring AliceAccount to life as BankAccount with ("Alice")
+
+AliceAccount does deposit
+AliceAccount does withdraw
+AliceAccount does withdraw
+AliceAccount does withdraw
+AliceAccount does withdraw
+AliceAccount does withdraw

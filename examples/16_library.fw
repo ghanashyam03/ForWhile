@@ -1,0 +1,55 @@
+creature Book
+  traits
+    title is text
+    available is true or false
+  end traits
+
+  when born with (title)
+    give self the trait title to title
+    give self the trait available to true
+  end born
+end creature
+
+creature Member
+  traits
+    name is text
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+  end born
+
+  action borrow
+    when self knows anyone as target_book
+      give book_ref to self target_book
+      when book_ref available == true
+        give book_ref the trait available to false
+        say self name + " successfully borrowed " + book_ref title
+      otherwise
+        say self name + " tried to borrow " + book_ref title + " but it is not available."
+      end when
+    end when
+  end action
+
+  action return_book
+    when self knows anyone as target_book
+      give book_ref to self target_book
+      give book_ref the trait available to true
+      say self name + " returned " + book_ref title
+      self forgets target_book
+    end when
+  end action
+end creature
+
+bring MobyDick to life as Book with ("Moby Dick")
+bring Alice to life as Member with ("Alice")
+bring Bob to life as Member with ("Bob")
+
+Alice knows MobyDick as target_book
+Alice does borrow
+
+Bob knows MobyDick as target_book
+Bob does borrow
+
+Alice does return_book
+Bob does borrow

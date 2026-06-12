@@ -1,0 +1,36 @@
+creature Train
+  traits
+    name is text
+    station is text
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+    give self the trait station to "Station A"
+    say self name + " starts at " + self station
+  end born
+
+  action travel
+    when self station == "Station A"
+      give self the trait station to "Station B"
+      say self name + " travels to Station B."
+    otherwise
+      when self station == "Station B"
+        give self the trait station to "Station C"
+        say self name + " travels to Station C."
+      otherwise
+        when self station == "Station C"
+          give self the trait station to "Station A"
+          say self name + " travels back to Station A."
+        end when
+      end when
+    end when
+  end action
+end creature
+
+bring Express to life as Train with ("Express Train 1")
+
+Express does travel
+Express does travel
+Express does travel
+Express does travel

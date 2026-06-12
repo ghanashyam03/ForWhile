@@ -6,33 +6,33 @@ from forwhile.interpreter import Interpreter
 def test_set_and_say(capsys):
     code = """
     give my the trait name to "Alice"
-    say my name
+    announce my name
     """
     ast = parser.parse(code)
     interpreter = Interpreter()
     interpreter.run(ast)
     captured = capsys.readouterr()
-    assert captured.out.strip() == "Alice"
+    assert captured.out.strip() == "[World] Alice"
 
 def test_arithmetic(capsys):
     code = """
     give num the trait value1 to 10
     give num the trait value2 to 5
     give num the trait sum to num value1 + num value2
-    say num sum
+    announce num sum
 
     give str the trait value1 to "Hello "
     give str the trait value2 to "World"
     give str the trait greeting to str value1 + str value2
-    say str greeting
+    announce str greeting
     """
     ast = parser.parse(code)
     interpreter = Interpreter()
     interpreter.run(ast)
     captured = capsys.readouterr()
     lines = captured.out.strip().split("\n")
-    assert lines[0].strip() == "15"
-    assert lines[1].strip() == "Hello World"
+    assert lines[0].strip() == "[World] 15"
+    assert lines[1].strip() == "[World] Hello World"
 
 def test_repeat_loop(capsys):
     code = """
@@ -40,13 +40,13 @@ def test_repeat_loop(capsys):
     repeat 3 times
       give my the trait count to my count + 1
     end repeat
-    say my count
+    announce my count
     """
     ast = parser.parse(code)
     interpreter = Interpreter()
     interpreter.run(ast)
     captured = capsys.readouterr()
-    assert captured.out.strip() == "3"
+    assert captured.out.strip() == "[World] 3"
 
 def test_until_loop(capsys):
     code = """
@@ -54,13 +54,13 @@ def test_until_loop(capsys):
     until my count == 3
       give my the trait count to my count + 1
     end until
-    say my count
+    announce my count
     """
     ast = parser.parse(code)
     interpreter = Interpreter()
     interpreter.run(ast)
     captured = capsys.readouterr()
-    assert captured.out.strip() == "3"
+    assert captured.out.strip() == "[World] 3"
 
 def test_when_otherwise(capsys):
     code = """
@@ -70,7 +70,7 @@ def test_when_otherwise(capsys):
     otherwise
       give test the trait result to "Lesser"
     end when
-    say test result
+    announce test result
 
     give test the trait value to 3
     when test value > 5
@@ -78,15 +78,15 @@ def test_when_otherwise(capsys):
     otherwise
       give test the trait result2 to "Lesser"
     end when
-    say test result2
+    announce test result2
     """
     ast = parser.parse(code)
     interpreter = Interpreter()
     interpreter.run(ast)
     captured = capsys.readouterr()
     lines = captured.out.strip().split("\n")
-    assert lines[0].strip() == "Greater"
-    assert lines[1].strip() == "Lesser"
+    assert lines[0].strip() == "[World] Greater"
+    assert lines[1].strip() == "[World] Lesser"
 
 def test_creature_action_and_self(capsys):
     code = """
@@ -105,7 +105,7 @@ def test_creature_action_and_self(capsys):
 
     bring Ember to life as Dragon with ("Ember" "red")
     Ember does breathe fire
-    say Ember health
+    announce Ember health
     """
     ast = parser.parse(code)
     interpreter = Interpreter()
@@ -113,7 +113,7 @@ def test_creature_action_and_self(capsys):
     captured = capsys.readouterr()
     lines = captured.out.strip().split("\n")
     assert lines[0].strip() == "Ember breathes red fire!"
-    assert lines[1].strip() == "90"
+    assert lines[1].strip() == "[World] 90"
 
 def test_deprecated_compatibility(capsys):
     code = """
@@ -150,7 +150,7 @@ def test_relationships_and_navigation(capsys):
     bring Bob to life as Person with ("Bob")
 
     Alice knows Bob as friend
-    say Alice friend name
+    announce Alice friend name
     Alice friend does greet
     """
     ast = parser.parse(code)
@@ -158,7 +158,7 @@ def test_relationships_and_navigation(capsys):
     interpreter.run(ast)
     captured = capsys.readouterr()
     lines = captured.out.strip().split("\n")
-    assert lines[0].strip() == "Bob"
+    assert lines[0].strip() == "[World] Bob"
     assert lines[1].strip() == "Bob says hello!"
 
 def test_relationship_groups_and_iteration(capsys):
@@ -177,7 +177,7 @@ def test_relationship_groups_and_iteration(capsys):
     Alice knows Carol as friend
 
     repeat through Alice friends as each friend
-      say each friend name
+      announce each friend name
     end repeat
     """
     ast = parser.parse(code)
@@ -185,8 +185,8 @@ def test_relationship_groups_and_iteration(capsys):
     interpreter.run(ast)
     captured = capsys.readouterr()
     lines = [line.strip() for line in captured.out.strip().split("\n") if line.strip()]
-    assert "Bob" in lines
-    assert "Carol" in lines
+    assert "[World] Bob" in lines
+    assert "[World] Carol" in lines
     assert len(lines) == 2
 
 def test_relationship_conditions_and_forget(capsys):
@@ -201,25 +201,25 @@ def test_relationship_conditions_and_forget(capsys):
     bring Bob to life as Person with ("Bob")
 
     when Alice knows Bob
-      say "Unexpected"
+      announce "Unexpected"
     otherwise
-      say "Disconnected"
+      announce "Disconnected"
     end when
 
     Alice knows Bob as friend
     when Alice knows Bob as friend
-      say "Connected"
+      announce "Connected"
     end when
 
     when Alice knows anyone as friend
-      say "Has friend"
+      announce "Has friend"
     end when
 
     Alice forgets friend
     when Alice knows anyone as friend
-      say "Has friend still"
+      announce "Has friend still"
     otherwise
-      say "Lonely"
+      announce "Lonely"
     end when
     """
     ast = parser.parse(code)
@@ -227,10 +227,10 @@ def test_relationship_conditions_and_forget(capsys):
     interpreter.run(ast)
     captured = capsys.readouterr()
     lines = [line.strip() for line in captured.out.strip().split("\n") if line.strip()]
-    assert lines[0] == "Disconnected"
-    assert lines[1] == "Connected"
-    assert lines[2] == "Has friend"
-    assert lines[3] == "Lonely"
+    assert lines[0] == "[World] Disconnected"
+    assert lines[1] == "[World] Connected"
+    assert lines[2] == "[World] Has friend"
+    assert lines[3] == "[World] Lonely"
 
 def test_trait_change_reaction(capsys):
     code = """
@@ -243,7 +243,7 @@ def test_trait_change_reaction(capsys):
     bring my_fire to life as Fire
 
     whenever my_fire gets trait brightness changed
-      say "Brightness is now " + my_fire brightness
+      announce "Brightness is now " + my_fire brightness
     end whenever
 
     give my_fire the trait brightness to 80
@@ -253,7 +253,7 @@ def test_trait_change_reaction(capsys):
     interpreter.run(ast)
     captured = capsys.readouterr()
     lines = [l.strip() for l in captured.out.split("\n") if l.strip()]
-    assert "Brightness is now 80" in lines
+    assert "[World] Brightness is now 80" in lines
 
 def test_death_event_and_context(capsys):
     code = """

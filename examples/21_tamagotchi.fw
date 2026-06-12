@@ -1,0 +1,51 @@
+creature Pet
+  traits
+    name is text
+    hunger is a number
+    happiness is a number
+    energy is a number
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+    give self the trait hunger to 0
+    give self the trait happiness to 5
+    give self the trait energy to 5
+  end born
+
+  action play
+    when self energy > 0
+      give self the trait happiness to self happiness + 2
+      give self the trait energy to self energy - 1
+      give self the trait hunger to self hunger + 1
+      say self name + " played and is now happier! Happiness: " + self happiness + ", Energy: " + self energy
+    otherwise
+      say self name + " is too tired to play."
+    end when
+  end action
+
+  action feed
+    when self hunger > 0
+      give self the trait hunger to self hunger - 2
+      give self the trait energy to self energy + 1
+      say self name + " ate some food! Hunger is now " + self hunger
+    otherwise
+      say self name + " is not hungry right now."
+    end when
+  end action
+
+  action sleep
+    give self the trait energy to self energy + 3
+    give self the trait hunger to self hunger + 1
+    say self name + " took a nap. Energy is restored to " + self energy
+  end action
+end creature
+
+bring Tamago to life as Pet with ("Tamago")
+
+Tamago does play
+Tamago does play
+Tamago does feed
+Tamago does sleep
+Tamago does play
+Tamago does feed

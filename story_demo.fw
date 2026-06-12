@@ -1,0 +1,57 @@
+# The Story of the Forest Dragon
+
+# 1. Define our creature
+creature Dragon
+  when born with (name color)
+    give self the trait name to name
+    give self the trait color to color
+    give self the trait hunger to 0
+  end born
+
+  action fly
+    say self name + " the " + self color + " dragon flies into the sky!"
+  end action
+
+  action eat
+    say self name + " eats some wild berries."
+    give self the trait hunger to 0
+  end action
+end creature
+
+# 2. Setup the world memory
+the world remembers dragon_count as 1
+
+# 3. Setup scenes
+scene dawn
+  announce "The sun rises over the quiet forest."
+end scene
+
+scene night
+  announce "Darkness falls, and stars appear in the night sky."
+end scene
+
+# 4. Play the dawn scene
+play scene dawn
+
+# 5. Bring our dragon to life
+bring Ember to life as Dragon with ("Ember" "red")
+
+# 6. Trigger dragon actions
+Ember does fly
+
+# 7. Listen for changes using a whenever block
+whenever Ember gets trait hunger changed
+  when Ember hunger > 30
+    announce Ember name + " is feeling hungry!"
+    Ember does eat
+  end when
+end whenever
+
+# 8. Increase hunger to trigger the whenever rule
+give Ember the trait hunger to 45
+
+# 9. Read from the world memory
+announce "Number of dragons in the world: " + the world knows dragon_count
+
+# 10. Play the night scene
+play scene night

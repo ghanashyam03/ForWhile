@@ -11,5 +11,5 @@ end creature
 bring Alice to life as Character with ("Alice")
 bring Bob to life as Character with ("Bob")
 
-say Alice name + " meets " + Bob name + "."
+announce Alice name + " meets " + Bob name + "."
 Alice does greet

@@ -1,0 +1,155 @@
+# An Ecosystem Simulation in ForWhile
+# This simulation models a food chain: Grass, Rabbit, and Fox.
+# On each tick, time passes, hunger levels rise, and creatures must find food to survive.
+
+the world is lenient
+
+creature Grass
+  traits
+    amount is a number
+    alive is true or false
+  end traits
+
+  when born
+    give self the trait amount to 5
+    give self the trait alive to yes
+  end born
+end creature
+
+creature Rabbit
+  traits
+    hunger is a number between 0 and 10
+    alive is true or false
+  end traits
+
+  when born
+    give self the trait hunger to 0
+    give self the trait alive to yes
+  end born
+
+  action eat
+    when hunger > 3
+      # Check if rabbit knows a grass food source
+      when self knows anyone as grass
+        give grass_ref to self grass
+        when grass_ref alive is yes
+          give hunger to hunger - 3
+          give grass_ref amount to grass_ref amount - 1
+          announce "Rabbit eats some grass! Hunger level is now " + hunger
+          
+          when grass_ref amount < 1
+            give grass_ref alive to no
+            remove pasture from world
+            announce "The pasture grass is completely eaten!"
+          end when
+        otherwise
+          give hunger to hunger + 1
+          announce "Rabbit searches for grass, but finds none. Hunger increases to " + hunger
+        end when
+      otherwise
+        give hunger to hunger + 1
+        announce "Rabbit searches for grass, but finds none. Hunger increases to " + hunger
+      end when
+    otherwise
+      announce "Rabbit is full and hops around happily."
+    end when
+  end action
+end creature
+
+creature Fox
+  traits
+    hunger is a number between 0 and 10
+    alive is true or false
+  end traits
+
+  when born
+    give self the trait hunger to 0
+    give self the trait alive to yes
+  end born
+
+  action hunt
+    when hunger > 3
+      # Check if fox knows a rabbit prey
+      when self knows anyone as rabbit
+        give bunny_ref to self rabbit
+        when bunny_ref alive is yes
+          give hunger to hunger - 4
+          give bunny_ref alive to no
+          remove bunbun from world
+          announce "Fox hunts and eats bunbun! Fox hunger decreases to " + hunger
+        otherwise
+          give hunger to hunger + 1
+          announce "Fox hunts for prey but bunbun is gone. Hunger increases to " + hunger
+        end when
+      otherwise
+        give hunger to hunger + 1
+        announce "Fox hunts for prey but finds no rabbit. Hunger increases to " + hunger
+      end when
+    otherwise
+      announce "Fox is full and rests in its den."
+    end when
+  end action
+end creature
+
+# Bring the initial ecosystem members to life
+bring pasture to life as Grass
+bring bunbun to life as Rabbit
+bring foxy to life as Fox
+
+# Establish relationships (Fox knows Rabbit, Rabbit knows Grass)
+bunbun knows pasture as grass
+foxy knows bunbun as rabbit
+
+# Set up simulation tick rules
+on each tick
+  # 1. Update Grass state (if it still exists, let it grow slightly, or resprout if gone)
+  when the world counts Grass > 0
+    # Grass grows
+    give pasture amount to pasture amount + 1
+  otherwise
+    announce "New grass sprouts up from the soil!"
+    bring pasture to life as Grass
+    when the world counts Rabbit > 0
+      bunbun forgets grass
+      bunbun knows pasture as grass
+    end when
+  end when
+
+  # 2. Update Rabbit state
+  when the world counts Rabbit > 0
+    give bunbun hunger to bunbun hunger + 1
+    when bunbun hunger is 10
+      give bunbun alive to no
+      remove bunbun from world
+      announce "Bunbun has starved to death."
+    otherwise
+      bunbun does eat
+    end when
+  end when
+
+  # 3. Update Fox state
+  when the world counts Fox > 0
+    give foxy hunger to foxy hunger + 1
+    when foxy hunger is 10
+      give foxy alive to no
+      remove foxy from world
+      announce "Foxy has starved to death."
+    otherwise
+      foxy does hunt
+    end when
+  end when
+
+  # 4. Check for species extinction announcements
+  when the world counts Rabbit is 0
+    announce "[Simulation Alert] Rabbit species has gone extinct in the area!"
+  end when
+  when the world counts Fox is 0
+    announce "[Simulation Alert] Fox species has gone extinct in the area!"
+  end when
+end tick
+
+announce "--- The Simulation Begins ---"
+the world ticks 30 times
+  announce "Tick passed. Rabbits: " + the world counts Rabbit + ", Foxes: " + the world counts Fox + ", Grass: " + the world counts Grass
+end ticks
+announce "--- The Simulation Ends ---"

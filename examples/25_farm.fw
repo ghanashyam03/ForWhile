@@ -1,0 +1,46 @@
+creature Crop
+  traits
+    growth_stage is a number
+    is_harvested is true or false
+  end traits
+
+  when born
+    give self the trait growth_stage to 0
+    give self the trait is_harvested to false
+  end born
+
+  action water
+    when self is_harvested == false
+      give self the trait growth_stage to self growth_stage + 1
+      say "Crop watered. Growth stage: " + self growth_stage
+      when self growth_stage > 2
+        say "The crop is fully grown and ready to harvest!"
+      end when
+    otherwise
+      say "The crop is already harvested."
+    end when
+  end action
+
+  action harvest
+    when self is_harvested == false
+      when self growth_stage > 2
+        give self the trait is_harvested to true
+        say "Crop successfully harvested!"
+      otherwise
+        say "Crop is not fully grown yet. Cannot harvest."
+      end when
+    otherwise
+      say "Crop already harvested."
+    end when
+  end action
+end creature
+
+bring TomatoPlant to life as Crop
+
+TomatoPlant does harvest
+TomatoPlant does water
+TomatoPlant does water
+TomatoPlant does harvest
+TomatoPlant does water
+TomatoPlant does harvest
+TomatoPlant does water

@@ -1,0 +1,46 @@
+creature Player
+  traits
+    name is text
+    gold is a number
+    keys is a number
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+    give self the trait gold to 0
+    give self the trait keys to 0
+  end born
+
+  action explore
+    say self name + " enters a new room..."
+    # Simple simulation of finding random things by sequential actions
+  end action
+
+  action find_treasure
+    give self the trait gold to self gold + 10
+    say self name + " found a treasure chest! Gold is now " + self gold
+  end action
+
+  action find_key
+    give self the trait keys to self keys + 1
+    say self name + " found a shiny key. Total keys: " + self keys
+  end action
+
+  action unlock_door
+    when self keys > 0
+      give self the trait keys to self keys - 1
+      say self name + " used a key to unlock the door! Keys left: " + self keys
+    otherwise
+      say self name + " tries to open the door but it's locked. Needs a key."
+    end when
+  end action
+end creature
+
+bring Adventurer to life as Player with ("Explorer Eve")
+
+Adventurer does explore
+Adventurer does unlock_door
+Adventurer does find_key
+Adventurer does unlock_door
+Adventurer does explore
+Adventurer does find_treasure

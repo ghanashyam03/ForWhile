@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="forwhile",
-    version="0.1.0",
+    version="1.0.1",
     description="A children's programming language teaching OOP concepts through plain-English syntax",
     author="ForWhile Team",
     packages=find_packages(),

@@ -1,0 +1,67 @@
+creature Election
+  traits
+    candidate_a_votes is a number
+    candidate_b_votes is a number
+  end traits
+
+  when born
+    give self the trait candidate_a_votes to 0
+    give self the trait candidate_b_votes to 0
+  end born
+end creature
+
+creature Voter
+  traits
+    name is text
+    has_voted is true or false
+  end traits
+
+  when born with (name)
+    give self the trait name to name
+    give self the trait has_voted to false
+  end born
+
+  action vote_a
+    when self has_voted == false
+      when self knows anyone as ballot_box
+        give box to self ballot_box
+        give box the trait candidate_a_votes to box candidate_a_votes + 1
+        give self the trait has_voted to true
+        say self name + " voted for Candidate A."
+      end when
+    otherwise
+      say self name + " already voted!"
+    end when
+  end action
+
+  action vote_b
+    when self has_voted == false
+      when self knows anyone as ballot_box
+        give box to self ballot_box
+        give box the trait candidate_b_votes to box candidate_b_votes + 1
+        give self the trait has_voted to true
+        say self name + " voted for Candidate B."
+      end when
+    otherwise
+      say self name + " already voted!"
+    end when
+  end action
+end creature
+
+bring TownElection to life as Election
+
+bring Voter1 to life as Voter with ("John")
+bring Voter2 to life as Voter with ("Jane")
+bring Voter3 to life as Voter with ("Doe")
+
+Voter1 knows TownElection as ballot_box
+Voter2 knows TownElection as ballot_box
+Voter3 knows TownElection as ballot_box
+
+Voter1 does vote_a
+Voter2 does vote_b
+Voter1 does vote_b
+Voter3 does vote_a
+
+announce "Candidate A: " + TownElection candidate_a_votes
+announce "Candidate B: " + TownElection candidate_b_votes

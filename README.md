@@ -1,84 +1,149 @@
 # ForWhile
 
-A children's programming language designed to teach Object-Oriented Programming (OOP) and core simulation concepts through a natural, world-building narrative syntax.
+A world-building programming language designed to teach Object-Oriented Programming (OOP) and core simulation concepts to young storytellers through a plain-English, narrative-driven syntax.
 
-## Philosophy
+---
+
+## 🌟 Philosophy
 
 Every feature in ForWhile is designed to serve a world-building and simulation philosophy:
 1. **Teaches Real Programming Concepts**: Maps directly to classes, objects, traits/properties, composition, methods, constructor methods, loops, and conditions.
 2. **Easy to Understand**: Reads like plain English narration.
-3. **Unique Design**: Avoids being "Python with English words" by treating everything as creatures, traits, and actions.
-4. **Reinforces World-building**: Code reads like a fantasy story or game setup.
+3. **No Developer Jargon**: Avoids being "Python with English words" by replacing technical keywords (like `def`, `class`, `return`) with narrative concepts (like `creature`, `action`, `play scene`).
+4. **Reinforces World-building**: Code reads like a fantasy story or simulation setup.
 
-## Syntax Comparison
+---
 
-| Concept | Python / Old Syntax | ForWhile Syntax |
+## ⚔️ Syntax Comparison
+
+Here is how ForWhile maps common programming paradigms to storytelling:
+
+| Programming Concept | Traditional Language (e.g., Python) | ForWhile Narrative Syntax |
 | :--- | :--- | :--- |
-| Class / Blueprint | `class Dragon:` | `creature Dragon` |
-| Instantiation | `Ember = Dragon("Ember")` | `bring Ember to life as Dragon with ("Ember")` |
-| State Mutation | `Ember.health = 100` | `give Ember the trait health to 100` |
-| Composition | `attach Fire to Ember` | `attach Fire to Ember` |
-| Method / Action | `def breathe(self):` | `action breathe` |
-| Method Call | `Ember.breathe()` | `Ember does breathe` |
-| Constructor | `def __init__(self):` | `when born` |
-| Loops | `until condition:` | `until condition` |
-| Conditionals | `if condition: ... else:` | `when condition: ... otherwise:` |
-| Relationships | `alice.friend = bob` | `Alice knows Bob as friend` |
-| Relationship Queries | `if hasattr(alice, 'friend'):` | `when Alice knows Bob as friend` |
-| Collection Iteration | `for friend in alice.friends:` | `repeat through Alice friends as each friend` |
-| Event Rule | `observer.on('action', callback)` | `whenever Ember does breathe fire` |
-| State Change Reaction | `on_property_change(callback)` | `whenever Ember gets trait health changed` |
-| Entity Removal | `del world.entities[bob]` | `remove bob from world` |
-| World Announcement | `logging.info("[World] ...")` | `announce "A new day dawns!"` |
-| **World Memory (Set)** | `world_mem["dragons"] = 0` | `the world remembers dragons as 0` |
-| **World Memory (Get)** | `world_mem["dragons"]` | `the world knows dragons` |
-| **World Memory (Forget)**| `del world_mem["dragons"]` | `the world forgets dragons` |
-| **World Roster** | `[e for e in env if type(e) == Dragon]` | `the world's Dragon creatures` |
-| **World Counters** | `len(roster(Dragon))` | `the world counts Dragon` |
-| **World Persistence** | `json.dump(...)` / `json.load(...)` | `save the world to "save.fw"` / `restore the world from "save.fw"` |
+| **Class / Blueprint** | `class Dragon:` | `creature Dragon` |
+| **Instantiation** | `Ember = Dragon("Ember")` | `bring Ember to life as Dragon with ("Ember")` |
+| **State Mutation** | `Ember.health = 100` | `give Ember the trait health to 100` |
+| **Composition (Mixin)** | `attach Fire to Ember` | `attach Fire to Ember` |
+| **Method / Action** | `def breathe(self):` | `action breathe` |
+| **Method Call** | `Ember.breathe()` | `Ember does breathe` |
+| **Constructor** | `def __init__(self):` | `when born` |
+| **Conditional Block** | `if condition: ... else:` | `when condition: ... otherwise:` |
+| **Objects Graph / Edge** | `alice.friend = bob` | `alice knows bob as friend` |
+| **Plural References** | `[x for x in env if type(x) == Dragon]` | `the world's Dragon creatures` |
+| **Event Callback** | `observer.on('die', callback)` | `whenever anyone dies` |
+| **Time-Step Loop** | `for _ in range(10):` | `the world ticks 10 times` |
 
-## Scoping Rules
 
-Inside a creature's action or `when born` block:
-1. **Local Variables & Parameters**: Takes highest precedence. If a variable is in the current execution block (or loop alias, or parameter), it is resolved directly.
-2. **Self Traits**: If a bare identifier is not found in the local scope, ForWhile automatically checks if it is a trait on the active creature (`self`). For example, writing `health` resolves directly to `self health`.
-3. **Global Environment**: If the name is not in the local scope or `self` traits, ForWhile checks the global environment for other creature instances or global variables.
-4. **World Memory Facts**: Must be explicitly requested using `the world knows <fact_name>` to teach that global facts belong to the simulation container, not the local context.
+---
 
-## Directory Structure
+## 📖 Comprehensive Documentation
+
+For every single detail about the language, please refer to our dedicated documentation files:
+
+* **Language Specification**: [docs/LANGUAGE_SPEC.md](docs/LANGUAGE_SPEC.md) — The ultimate reference for grammar, design decisions, complete syntax rules, and language capabilities.
+* **Educator's Guide**: [docs/EDUCATORS_GUIDE.md](docs/EDUCATORS_GUIDE.md) — CS concept mapping, teaching strategies, and 10 ready-to-use classroom exercises.
+
+---
+
+## 🛠️ Installation & Setup
+
+ForWhile is now available on PyPI! It requires **Python 3.8+**.
+
+### 🪟 Windows
+
+1. Open **Command Prompt** or **PowerShell**.
+2. Install ForWhile via pip:
+   ```cmd
+   pip install forwhile
+   ```
+3. Verify the installation:
+   ```cmd
+   forwhile --version
+   ```
+*(Note: If `forwhile` is not recognized, ensure your Python Scripts folder is added to your system's PATH.)*
+
+### 🍎 macOS
+
+1. Open **Terminal**.
+2. Install ForWhile via pip3:
+   ```bash
+   pip3 install forwhile
+   ```
+3. Verify the installation:
+   ```bash
+   python3 -m forwhile --version
+   ```
+*(Note: If installed in `~/.local/bin` or `Library/Python/.../bin`, you can run it via `python3 -m forwhile` or add the directory to your PATH.)*
+
+### 🐧 Ubuntu / Linux
+
+1. Open your **Terminal**.
+2. Install ForWhile using pip3:
+   ```bash
+   pip3 install forwhile
+   ```
+3. Verify the installation:
+   ```bash
+   forwhile --version
+   # or
+   python3 -m forwhile --version
+   ```
+
+### 💻 VS Code Extension
+
+For the best coding experience, we provide a **Visual Studio Code extension** with full syntax highlighting for `.fw` files!
+
+**How to Install:**
+1. Open VS Code.
+2. Go to the **Extensions** view (`Ctrl+Shift+X` or `Cmd+Shift+X`).
+3. Search for **ForWhile** in the Marketplace.
+4. Click **Install**.
+
+
+---
+
+## 🚀 Usage & CLI Commands
+
+Once installed, the `forwhile` command (or `python -m forwhile`) is available in your terminal. It supports four subcommands:
+
+### 1. Start the REPL (`forwhile start`)
+Launch the interactive storytelling environment. 
+```bash
+forwhile start
+```
+Type `help` inside the REPL to see a visual cheat sheet of commands.
+
+### 2. Run a Story File (`forwhile run <file.fw>`)
+Bring a `.fw` story script to life and see the narration. Check out the 35+ examples in the `/examples` folder!
+```bash
+forwhile run examples/15_ecosystem.fw
+```
+
+### 3. Check a Story File (`forwhile check <file.fw>`)
+Verify a story file for syntax errors or invalid vocabulary without running it.
+```bash
+forwhile check examples/01_hello.fw
+```
+
+### 4. Version Check (`forwhile --version`)
+Print the current version of the ForWhile engine.
+```bash
+forwhile --version
+```
+
+---
+
+## 🏠 Project Structure
 
 ```text
-forwhile/
-├── forwhile/
-│   ├── __init__.py       (Exposes runner)
-│   ├── lexer.py          (Lexer logic using PLY)
-│   ├── parser.py         (Parser logic using PLY)
-│   ├── interpreter.py    (CLI / Tree-walk interpreter)
-│   └── errors.py         (Graceful custom exceptions)
-├── tests/
-│   ├── test_basic.py     (Basic pytest test suite)
-│   └── test_world_memory.py (World memory pytest suite)
-├── examples/
-│   ├── 01_hello.fw       (World-building hello world)
-│   ├── 09_world_memory.fw (Kingdom simulation sample)
-│   └── 10_roster.fw      (Creature list and counter sample)
-├── setup.py              (CLI configuration)
-├── README.md             (Documentation)
-└── requirements.txt      (Requirements list)
+ForWhile/
+├── forwhile/              # Core Source Code (interpreter, lexer, parser)
+├── tests/                 # Comprehensive Test Suites
+├── examples/              # Over 35 Sample Story Scripts (.fw files)
+├── docs/                  # Documentation (Spec and Educator's Guide)
+├── editors/vscode/        # VS Code Extension Source
+├── pyproject.toml         # Modern package manifest
+└── LICENSE                # MIT License
 ```
 
-## Installation
-
-Install in editable developer mode:
-
-```bash
-pip install -e .
-```
-
-## Usage
-
-Run any ForWhile program using the CLI:
-
-```bash
-forwhile examples/09_world_memory.fw
-```
+---

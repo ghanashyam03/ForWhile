@@ -27,22 +27,22 @@ bring Legolas to life as Elf with ("Legolas")
 bring Gimli to life as Dwarf with ("Gimli")
 bring Thorin to life as Dwarf with ("Thorin")
 
-say "--- Humans in the World ---"
+announce "--- Humans in the World ---"
 repeat through the world's Human creatures as each_human
-  say "  " + each_human name
+  announce "  " + each_human name
 end repeat
 
-say "--- Elves in the World ---"
+announce "--- Elves in the World ---"
 repeat through the world's Elf creatures as each_elf
-  say "  " + each_elf name
+  announce "  " + each_elf name
 end repeat
 
-say "--- Dwarves in the World ---"
+announce "--- Dwarves in the World ---"
 repeat through the world's Dwarf creatures as each_dwarf
-  say "  " + each_dwarf name
+  announce "  " + each_dwarf name
 end repeat
 
-say "--- Counts ---"
-say "There are " + the world counts Human + " humans."
-say "There are " + the world counts Elf + " elves."
-say "There are " + the world counts Dwarf + " dwarves."
+announce "--- Counts ---"
+announce "There are " + the world counts Human + " humans."
+announce "There are " + the world counts Elf + " elves."
+announce "There are " + the world counts Dwarf + " dwarves."

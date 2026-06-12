@@ -1,0 +1,39 @@
+creature Elevator
+  traits
+    current_floor is a number
+    target_floor is a number
+  end traits
+
+  when born
+    give self the trait current_floor to 1
+    give self the trait target_floor to 1
+  end born
+
+  action move
+    when self current_floor == self target_floor
+      say "Elevator is already at floor " + self current_floor
+    otherwise
+      when self current_floor < self target_floor
+        give self the trait current_floor to self current_floor + 1
+        say "Elevator goes UP. Now at floor " + self current_floor
+      otherwise
+        give self the trait current_floor to self current_floor - 1
+        say "Elevator goes DOWN. Now at floor " + self current_floor
+      end when
+    end when
+  end action
+end creature
+
+bring MainElevator to life as Elevator
+
+say "Going to floor 4."
+give MainElevator the trait target_floor to 4
+MainElevator does move
+MainElevator does move
+MainElevator does move
+
+say "Going to floor 2."
+give MainElevator the trait target_floor to 2
+MainElevator does move
+MainElevator does move
+MainElevator does move

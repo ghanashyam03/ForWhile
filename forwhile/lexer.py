@@ -14,6 +14,14 @@ tokens = (
     # World Memory tokens
     'THE_WORLD', 'THE_WORLDS', 'REMEMBERS', 'COUNTS', 'CREATURES', 'SAVE', 'RESTORE',
 
+    # Narrative tokens
+    'SCENE', 'PLAY', 'TICKS', 'TICK', 'SAYS', 'ON_EACH_TICK',
+
+    # Trait Kind tokens
+    'TRAITS', 'IS', 'WORD', 'NUMBER_KIND', 'BETWEEN', 'AND', 'ONE_OF',
+    'TRUE_KEYWORD', 'FALSE_KEYWORD', 'OR_KEYWORD', 'LIST_KIND', 'YES', 'NO',
+    'STRICT', 'LENIENT', 'IS_A',
+
     # Deprecated/Legacy tokens (kept for backward compatibility)
     'CLASS', 'END', 'CREATE', 'WITH', 'METHOD', 'FROM', 'SET', 'TO', 'SAY', 'ATTACH',
     'REPEAT', 'TIMES', 'IF', 'ELSE', 'ASK', 'CALL',
@@ -41,6 +49,18 @@ def t_THE_WORLDS(t):
 
 def t_THE_WORLD(t):
     r"[tT][hH][eE]\s+[wW][oO][rR][lL][dD]"
+    return t
+
+def t_ON_EACH_TICK(t):
+    r"[oO][nN]\s+[eE][aA][cC][hH]\s+[tT][iI][cC][kK]"
+    return t
+
+def t_IS_A(t):
+    r"[iI][sS]\s+[aA][nN]?\b"
+    return t
+
+def t_ONE_OF(t):
+    r"[oO][nN][eE]\s+[oO][fF]\b"
     return t
 
 def t_IDENTIFIER(t):
@@ -83,6 +103,29 @@ def t_IDENTIFIER(t):
         'creatures': 'CREATURES',
         'save': 'SAVE',
         'restore': 'RESTORE',
+
+        # Narrative keywords
+        'scene': 'SCENE',
+        'play': 'PLAY',
+        'ticks': 'TICKS',
+        'tick': 'TICK',
+        'says': 'SAYS',
+
+        # Trait Kind keywords
+        'traits': 'TRAITS',
+        'is': 'IS',
+        'word': 'WORD',
+        'number': 'NUMBER_KIND',
+        'between': 'BETWEEN',
+        'and': 'AND',
+        'true': 'TRUE_KEYWORD',
+        'false': 'FALSE_KEYWORD',
+        'or': 'OR_KEYWORD',
+        'list': 'LIST_KIND',
+        'yes': 'YES',
+        'no': 'NO',
+        'strict': 'STRICT',
+        'lenient': 'LENIENT',
         
         # Old/Deprecated syntax (aliases)
         'class': 'CLASS',
@@ -130,7 +173,7 @@ def t_NEWLINE(t):
 t_ignore = ' \t\r'
 
 def t_error(t):
-    print(f"Illegal character '{t.value[0]}'")
-    t.lexer.skip(1)
+    from forwhile.errors import ForWhileSyntaxError
+    raise ForWhileSyntaxError(f"I couldn't understand the character '{t.value[0]}' on line {t.lexer.lineno}. Did you make a typo?", line=t.lexer.lineno)
 
 lexer = lex.lex()
