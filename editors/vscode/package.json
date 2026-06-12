@@ -2,7 +2,7 @@
   "name": "forwhile-syntax",
   "displayName": "ForWhile Syntax Highlighting",
   "description": "Syntax highlighting support for the ForWhile world-building programming language",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "forwhile",
   "engines": {
     "vscode": "^1.50.0"
