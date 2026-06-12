@@ -9,7 +9,7 @@ def test_cli_version(capsys):
             main()
         assert excinfo.value.code == 0
     captured = capsys.readouterr()
-    assert "version 1.0.0" in captured.out
+    assert "version 1.0.1" in captured.out
 
 def test_cli_help(capsys):
     with patch.object(sys, 'argv', ['forwhile']):
