@@ -8,9 +8,9 @@ the world remembers year as 1
 
 # Run the simulation until the kingdom runs out of gold
 until the world knows gold == 0
-  say "Year " + the world knows year + ":"
-  say "  Population: " + the world knows population
-  say "  Gold: " + the world knows gold
+  announce "Year " + the world knows year + ":"
+  announce "  Population: " + the world knows population
+  announce "  Gold: " + the world knows gold
   
   # Population grows by 2 each year
   the world remembers population as the world knows population + 2

@@ -18,15 +18,15 @@ bring Badger to life as ForestCreature with ("Badger" "Oak Tree")
 # Reactive world rule that checks creature locations when anyone moves
 whenever anyone does move
   when Robin location == Squirrel location
-    say Robin name + " and " + Squirrel name + " greet each other at the " + Robin location + "!"
+    announce Robin name + " and " + Squirrel name + " greet each other at the " + Robin location + "!"
   end when
 
   when Robin location == Badger location
-    say Robin name + " and " + Badger name + " greet each other at the " + Robin location + "!"
+    announce Robin name + " and " + Badger name + " greet each other at the " + Robin location + "!"
   end when
 
   when Squirrel location == Badger location
-    say Squirrel name + " and " + Badger name + " greet each other at the " + Squirrel location + "!"
+    announce Squirrel name + " and " + Badger name + " greet each other at the " + Squirrel location + "!"
   end when
 end whenever
 

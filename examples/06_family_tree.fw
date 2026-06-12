@@ -12,10 +12,10 @@ bring Child2 to life as Person with ("Cathy")
 Parent knows Child1 as child
 Parent knows Child2 as child
 
-say "Parent's name: " + Parent name
+announce "Parent's name: " + Parent name
 
 # Iterate through children
-say "Children of Arthur:"
+announce "Children of Arthur:"
 repeat through Parent children as each child
-  say each child name
+  announce each child name
 end repeat

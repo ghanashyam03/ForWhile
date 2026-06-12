@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forwhile"
+version = "1.0.0"
+description = "A world-building language for young storytellers"
+readme = "README.md"
+authors = [
+    { name = "ForWhile Team" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Education",
+    "Topic :: Software Development :: Interpreter",
+]
+keywords = ["education", "kids", "storytelling", "simulation", "programming language", "world-building"]
+dependencies = [
+    "ply>=3.11",
+]
+requires-python = ">=3.6"
+
+[project.scripts]
+forwhile = "forwhile.interpreter:main"
